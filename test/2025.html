@@ -1,0 +1,2953 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Test Módulo 5</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+* { box-sizing: border-box; }
+body { font-family: Arial, sans-serif; background: #f2f4f7; margin:0; }
+.container { max-width: 900px; margin:auto; padding:15px; }
+.card { background:white; border-radius:10px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+h1,h2,h3{text-align:center;}
+.question{font-size:1.1rem;margin-bottom:15px;font-weight:bold;}
+.options label{
+    display:block;
+    padding:12px;
+    margin-bottom:12px;
+    border-radius:8px;
+    border:2px solid #ddd;
+    cursor:pointer;
+    transition: background 0.2s, border 0.2s;
+}
+.options label.selected{background:#cce5ff;border-color:#007bff;}
+.options label.option-wrong{border-color:#dc3545;background:#f8d7da;}
+.options label.option-correct{border-color:#28a745;background:#d4edda;}
+button{padding:14px;font-size:1rem;border-radius:8px;border:none;background:#007bff;color:white;width:100%;cursor:pointer;margin-top:15px;}
+button.secondary{background:#007bff;}
+button.third{background:#dc3545;}
+button.cuart{background:#fd7e14;}
+.info{display:flex;justify-content:space-between;margin-bottom:10px;font-weight:bold;}
+.final{display:none;}
+.failed-question{margin-top:30px;padding-top:20px;border-top:1px solid #ddd;}
+.failed-question .question-text{margin-bottom:15px;font-weight:bold;}
+.saved-module{
+    margin:8px 0 20px 0; 
+    font-size:0.95rem; 
+    padding:10px;
+    border-radius:10px;
+    box-shadow:0 3px 8px rgba(0,0,0,0.1);
+    transition: background 0.3s;
+}
+.saved-module p{margin:3px 0;}
+.saved-module.low{background:#f8d7da; color:#842029;}
+.saved-module.mid{background:#fff3cd; color:#664d03;}
+.saved-module.high{background:#d1e7dd; color:#0f5132;}
+#resumeDialog {
+    display: none; 
+    position: fixed; 
+    top: 0; left: 0; right: 0; bottom: 0; 
+    background: rgba(0,0,0,0.5); 
+    z-index: 9999;
+    justify-content: center; 
+    align-items: center;
+}
+#resumeDialog .card {
+    max-width: 400px; 
+    background: white;        
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: flex; 
+    flex-direction: column;
+    align-items: center;
+    gap: 12px; 
+    text-align: center;
+}
+#resumeDialog h2 { margin:0; }
+#resumeDialog p { margin:0; font-size:1rem; }
+#resumeDialog button { width: 80%; padding: 12px; font-size:1rem; border-radius:8px; border:none; cursor:pointer; transition: background 0.2s; }
+#resumeDialog button#continueBtn { background:#28a745; color:white; }
+#resumeDialog button#continueBtn:hover { background:#1e7e34; }
+#resumeDialog button#newBtn { background:#dc3545; color:white; }
+#resumeDialog button#newBtn:hover { background:#a71d2a; }
+#resumeDialog button + button { margin-top: 6px; } 
+#testSelection { display:none; }
+#testButtons button { margin-bottom: 12px; }
+
+/* Eliminamos el toggle switch original del modo estudio/examen */
+.mode-toggle-container {
+    display: none; /* Ocultamos el toggle original */
+}
+
+.mode-label {
+    display: none; /* Ocultamos las etiquetas del toggle original */
+}
+
+/* Indicador de modo actual */
+.current-mode-indicator {
+    text-align: center;
+    font-weight: bold;
+    margin: 10px 0;
+    padding: 8px;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+    font-size: 0.9rem;
+}
+
+.current-mode-indicator.exam {
+    color: #dc3545;
+    border: 2px solid #dc3545;
+}
+
+.current-mode-indicator.study {
+    color: #28a745;
+    border: 2px solid #28a745;
+}
+
+/* Estilos para mostrar nota en modo estudio */
+.study-mode-note {
+    background-color: #e7f5ff;
+    border-left: 4px solid #007bff;
+    padding: 10px;
+    margin: 15px 0;
+    border-radius: 0 8px 8px 0;
+    font-weight: bold;
+}
+
+/* Diálogo de confirmación para salir */
+#confirmDialog {
+    display: none; 
+    position: fixed; 
+    top: 0; left: 0; right: 0; bottom: 0; 
+    background: rgba(0,0,0,0.5); 
+    z-index: 9999;
+    justify-content: center; 
+    align-items: center;
+}
+
+#confirmDialog .card {
+    max-width: 400px; 
+    background: white;        
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: flex; 
+    flex-direction: column;
+    align-items: center;
+    gap: 12px; 
+    text-align: center;
+}
+
+#confirmDialog h2 { margin:0; }
+#confirmDialog p { margin:0; font-size:1rem; }
+#confirmDialog button { width: 80%; padding: 12px; font-size:1rem; border-radius:8px; border:none; cursor:pointer; transition: background 0.2s; }
+#confirmDialog button#confirmExitBtn { background:#dc3545; color:white; }
+#confirmDialog button#confirmExitBtn:hover { background:#a71d2a; }
+#confirmDialog button#cancelExitBtn { background:#6c757d; color:white; }
+#confirmDialog button#cancelExitBtn:hover { background:#545b62; }
+
+/* Estilos para los botones del test en la misma línea */
+.button-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.button-row button {
+    margin-top: 0;
+    flex: 1;
+}
+
+/* Estilos para los interruptores de modo estudio/examen y modo oscuro */
+.mode-toggle-group {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 140px;
+    margin: 20px 0;
+}
+
+.mode-toggle-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.mode-toggle-label {
+    font-size: 0.7rem;
+    color: #666;
+    text-align: center;
+    white-space: nowrap;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.mode-toggle {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    background-color: #f1f1f1;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: background-color 0.3s;
+}
+
+.mode-toggle::after {
+    content: '';
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    background-color: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+/* Interruptor de modo estudio/examen (izquierda) */
+#studyExamToggle.study-mode {
+    background-color: #28a745;
+}
+
+#studyExamToggle.study-mode::after {
+    content: '📚';
+    transform: translateX(0px);
+    background-color: white;
+    color: #333;
+}
+
+#studyExamToggle.exam-mode {
+    background-color: #dc3545;
+}
+
+#studyExamToggle.exam-mode::after {
+    content: '📝';
+    transform: translateX(30px);
+    background-color: white;
+    color: #333;
+}
+
+/* Interruptor de modo oscuro (derecha) */
+#darkModeToggle.light-mode {
+    background-color: #ffd700;
+}
+
+#darkModeToggle.light-mode::after {
+    content: '☀️';
+    transform: translateX(0px);
+    background-color: white;
+    color: #333;
+}
+
+#darkModeToggle.dark-mode {
+    background-color: #333;
+}
+
+#darkModeToggle.dark-mode::after {
+    content: '🌙';
+    transform: translateX(30px);
+    background-color: #555;
+    color: white;
+}
+
+/* Estilos para modo oscuro */
+body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+body.dark-mode .card {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+body.dark-mode .question {
+    color: #ffffff;
+}
+
+body.dark-mode .options label {
+    background-color: #2d2d2d;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+body.dark-mode .options label.selected {
+    background-color: #1a3d5c;
+    border-color: #007bff;
+}
+
+body.dark-mode .options label.option-correct {
+    background-color: #1e4620;
+    border-color: #28a745;
+    color: #ffffff;
+}
+
+body.dark-mode .options label.option-wrong {
+    background-color: #5a1a1a;
+    border-color: #dc3545;
+    color: #ffffff;
+}
+
+body.dark-mode button {
+    background-color: #0056b3;
+}
+
+body.dark-mode button.third {
+    background-color: #c82333;
+}
+
+body.dark-mode button.cuart {
+    background-color: #e06c00;
+}
+
+body.dark-mode .saved-module.low {
+    background-color: #5a1a1a;
+    color: #f8d7da;
+}
+
+body.dark-mode .saved-module.mid {
+    background-color: #5a4a00;
+    color: #fff3cd;
+}
+
+body.dark-mode .saved-module.high {
+    background-color: #1e4620;
+    color: #d1e7dd;
+}
+
+body.dark-mode .current-mode-indicator {
+    background-color: #2d2d2d;
+    border-color: #444;
+}
+
+body.dark-mode .study-mode-note {
+    background-color: #1a3d5c;
+    border-left-color: #007bff;
+    color: #e0e0e0;
+}
+
+body.dark-mode .failed-question {
+    border-top-color: #444;
+}
+
+body.dark-mode #resumeDialog .card,
+body.dark-mode #confirmDialog .card {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+}
+
+body.dark-mode .mode-toggle-label {
+    color: #aaa;
+}
+
+body.dark-mode .mode-toggle {
+    background-color: #2d2d2d;
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 600px) {
+    .mode-toggle-group {
+        gap: 120px;
+        flex-wrap: wrap;
+    }
+    
+    .mode-toggle {
+        width: 55px;
+        height: 28px;
+    }
+    
+    .mode-toggle::after {
+        width: 24px;
+        height: 24px;
+    }
+    
+    #studyExamToggle.exam-mode::after,
+    #darkModeToggle.dark-mode::after {
+        transform: translateX(27px);
+    }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div id="resumeDialog">
+    <div class="card">
+        <h2>💾 Intento guardado 💾</h2>
+        <p>Se detectó un intento previo guardado. ¿Deseas continuar o empezar de nuevo?</p>
+        <button id="continueBtn">Continuar</button>
+        <button id="newBtn">Empezar de nuevo</button>
+    </div>
+</div>
+
+<div id="confirmDialog">
+    <div class="card">
+        <h2>⚠️ Salir del test ⚠️</h2>
+        <p>¿Estás seguro de que quieres salir? Tu progreso se guardará automáticamente y podrás continuar más tarde.</p>
+        <button id="confirmExitBtn">Sí, salir</button>
+        <button id="cancelExitBtn">Cancelar</button>
+    </div>
+</div>
+
+<div class="card" id="testSelection">
+    <h1>📚 Hacer Test 📚</h1>
+    
+    <!-- Grupo de interruptores uno al lado del otro -->
+    <div class="mode-toggle-group">
+        <!-- Interruptor de modo estudio/examen (izquierda) -->
+        <div class="mode-toggle-wrapper">
+            <div class="mode-toggle-label" id="studyExamLabel">Modo Estudio</div>
+            <div class="mode-toggle study-mode" id="studyExamToggle"></div>
+        </div>
+        
+        <!-- Interruptor de modo oscuro (derecha) -->
+        <div class="mode-toggle-wrapper">
+            <div class="mode-toggle-label" id="darkModeLabel">Modo Claro</div>
+            <div class="mode-toggle light-mode" id="darkModeToggle"></div>
+        </div>
+    </div>
+    
+    <!-- Indicador del modo actual -->
+    <div class="current-mode-indicator study" id="modeIndicator">
+        Modo: Estudio - Verás las respuestas inmediatamente
+    </div>
+    
+    <div id="testButtons"></div>
+    <button class="third" onclick="goToIndex()">Volver</button>
+</div>
+
+<div class="card" id="quizCard">
+    <h1 id="themeTitle"></h1>
+    <div class="info">
+        <div id="progress"></div>
+        <div id="timer">⏱ 00:00</div>
+    </div>
+    <div class="question" id="questionText"></div>
+    
+    <!-- Contenedor para mostrar nota en modo estudio durante el test -->
+    <div id="studyNoteContainer" style="display:none;"></div>
+    
+    <div class="options" id="options"></div>
+    
+    <!-- Botones en la misma línea -->
+    <div class="button-row">
+        <button id="prevBtn">Anterior</button>
+         <button class="third" id="backBtn">Volver</button>
+        <button id="nextBtn">Siguiente</button>
+       
+    </div>
+</div>
+
+<div class="card final" id="finalScreen">
+    <h2>📊 Resultado final</h2>
+    <p id="summary"></p>
+    <p id="finalTime"></p>
+    <p id="finalNote"></p>
+    <div id="failedContainer" style="display:none;"></div>
+    <button class="secondary" onclick="restartTest()">Repetir test</button>
+    <button class="third" onclick="backToSelection()">Volver</button>
+</div>
+
+<div class="card final" id="lastFailsScreen">
+    <h2>Preguntas incorrectas o sin responder</h2>
+    <div id="lastFailsContainer"></div>
+    <button class="third" onclick="backToSelection()">Volver</button>
+</div>
+
+</div>
+
+<script>
+// === Datos del test ===
+
+const themes = [
+     {
+        name: 'TEMA 03',
+        questions: [
+        
+		  {
+        'question': '¿Cuál es la obligación de los poderes públicos vascos respecto a la discriminación múltiple hacia las mujeres?',
+        'options': [
+            'Mitigar la discriminación simple, sin priorizar las situaciones donde concurren múltiples factores.',
+            'Focalizar los géneros en la igualdad salarial de lado o más formas de discriminación múltiple.',
+            'Atender únicamente la discriminación por razones de género, sin considerar otros factores agravantes.',
+            'Combatir la discriminación múltiple y garantizar los derechos de mujeres que enfrentan múltiples factores de discriminación. ',
+        ],
+        'answer': 'Combatir la discriminación múltiple y garantizar los derechos de mujeres que enfrentan múltiples factores de discriminación. ',
+    },
+    {
+        'question': '¿Quién debe informar los proyectos de normas elaboradas en el ámbito de la Administración de la Comunidad Autónoma a efectos de verificar la correría aplicación de lo dispuesto en el artículo 29?',
+        'options': [
+            'Emakunde-Instituto Vasco de la Mujer. ',
+            'La Comisión de Igualdad.',
+            'El Consejo de Gobierno.',
+            'El Parlamento Vasco.',
+        ],
+        'answer': 'Emakunde-Instituto Vasco de la Mujer. ',
+    },
+    {
+        'question': 'De acuerdo con el texto, ¿qué requisito deben cumplir el Parlamento Vasco, las juntas generales, el Ararteko, el Tribunal Vasco de Cuentas Públicas y la Universidad del País Vasco en el desarrollo de políticas de igualdad?',
+        'options': [
+            'Crear un observatorio de igualdad para analizar las desigualdades en el ámbito público.',
+            'Establecer un sistema de cuotas para garantizar la presencia de mujeres en puestos directivos.',
+            'Elaborar un codigo de conducta para prevenir el acceso laboral por razón de sexo.',
+            'Disponer de una estructura con personal especializada para el desarrollo de políticas de igualdad. ',
+        ],
+        'answer': 'Disponer de una estructura con personal especializada para el desarrollo de políticas de igualdad. ',
+    },
+    {
+        'question': '¿Qué tipo de lenguaje e imágenes deben utilizar los poderes públicos vascos en sus documentos y soportes según el artículo 19.4?',
+        'options': [
+            'Un lenguaje técnico y especializado para asegurar la precisión de la información.',
+            'Un lenguaje formal y tradicional para mantener la seriedad de los documentos oficiales.',
+            'Un uso inclusivo y no sexista de todo tipo de lenguaje e imágenes. ',
+            'Imágenes que reflejen la diversidad cultural de la región sin enfocarse en cuestiones de género.',
+        ],
+        'answer': 'Un uso inclusivo y no sexista de todo tipo de lenguaje e imágenes. ',
+    },
+    {
+        'question': '¿Cuál es una de las principales obligaciones de los poderes públicos vascos según el artículo 19.1 en relación con la igualdad de género?',
+        'options': [
+            'Considerar activamente el objetivo de la igualdad de mujeres y hombres en la elaboración y aplicación de normas y políticas públicas. ',
+            'Priorizar el desarrollo económico sobre las consideraciones de igualdad de género en la formulación de políticas públicas.',
+            'Limitarse a informar sobre las desigualdades de género existentes sin tomar medidas proactivas en la elaboración de políticas públicas.',
+            'Delegar la responsabilidad de la igualdad de género a organizaciones no gubernamentales para asegurar una implementación más efectiva.',
+        ],
+        'answer': 'Considerar activamente el objetivo de la igualdad de mujeres y hombres en la elaboración y aplicación de normas y políticas públicas. ',
+    },
+    {
+        'question': '¿Qué deben incluir los proyectos de normas, según el texto, en función de la evaluación de impacto realizada?',
+        'options': [
+            'Medidas para neutralizar su posible impacto negativo en la situación de mujeres y hombres, reducir desigualdades y promover la igualdad de sexos. ',
+            'Un análisis exhaustivo de la normativa vigente en materia de igualdad de género, sin necesidad de incluir medidas específicas.',
+            'Una justificación de por qué no se necesario incluir medidas de igualdad debido a la naturaleza del proyecto normativo.',
+            'Únicamente medidas que promuevan la igualdad de género, sin considerar la neutralización de impactos negativos.',
+        ],
+        'answer': 'Medidas para neutralizar su posible impacto negativo en la situación de mujeres y hombres, reducir desigualdades y promover la igualdad de sexos. ',
+    },
+    {
+        'question': '¿Qué deben garantizar los poderes públicos vascos con respecto al personal técnico que ocupe plazas relacionadas con la igualdad de género?',
+        'options': [
+            'Garantizar la experiencia y/o capacitación específica del personal técnico, estableciendo requisitos de conocimientos en la materia. ',
+            'Promover la rotación del personal técnico entre diferentes áreas de la administración pública para fomentar una visión integral.',
+            'Asegurar que el personal técnico tenga al menos cinco años de experiencia en el sector público antes de ocupar dichas plazas.',
+            'Ofrecer incentivos económicos adicionales al personal técnico que trabaje en áreas de igualdad de género.',
+        ],
+        'answer': 'Garantizar la experiencia y/o capacitación específica del personal técnico, estableciendo requisitos de conocimientos en la materia. ',
+    },
+    {
+        'question': '¿Cuál es la prioridad de los poderes públicos vascos en relación con la violencia machista contra las mujeres?',
+        'options': [
+            'Concentrarse en la persecución de los agresores, sin abordar la raíz del problema de la violencia machista.',
+            'Fomentar campañas de concienciación sin necesidad de asegurar la atención integral a las víctimas.',
+            'Integrar la prevención, atención y erradicación de la violencia machista en sus políticas, priorizando la atención integral a las víctimas. ',
+            'Priorizar únicamente la erradicación de la violencia machista, dejando de lado la atención a las víctimas.',
+        ],
+        'answer': 'Integrar la prevención, atención y erradicación de la violencia machista en sus políticas, priorizando la atención integral a las víctimas. ',
+    },
+    {
+        'question': '¿Cuál es una de las obligaciones de los poderes públicos vascos en sus estudios, investigaciones y estadísticas, según el artículo 17.1.a?',
+        'options': [
+            'Incluir la variable sexo solo en estudios sobre salud reproductiva.',
+            'Incluir sistemáticamente la variable sexo en las estadísticas, encuestas y recogida de datos que se lleven a cabo. ',
+            'Excluir la variable sexo en las estadísticas para evitar sesgos de género.',
+            'Considerar la inclusión de la variable sexo de manera opcional, según la disponibilidad de recursos.',
+        ],
+        'answer': 'Incluir sistemáticamente la variable sexo en las estadísticas, encuestas y recogida de datos que se lleven a cabo. ',
+    },
+    {
+        'question': '¿Qué deben hacer los poderes públicos vascos para dar cumplimiento a la formación de su personal en materia de igualdad, según el artículo 18.2.a?',
+        'options': [
+            'Promover la contratación de expertos externos para impartir cursos sobre igualdad de género.',
+            'Realizar encuestas anuales para evaluar el nivel de conocimiento del personal en materia de igualdad.',
+            'Establecer un sistema de incentivos económicos para aquellos empleados que participen en actividades de formación en igualdad.',
+            'Elaborar y ejecutar planes de formación, teniendo en cuenta las competencias necesarias en el ámbito de la igualdad de mujeres y hombres para cada una de las distintas tipologías de puestos de trabajo existentes. ',
+        ],
+        'answer': 'Elaborar y ejecutar planes de formación, teniendo en cuenta las competencias necesarias en el ámbito de la igualdad de mujeres y hombres para cada una de las distintas tipologías de puestos de trabajo existentes. ',
+    },
+    {
+        'question': '¿Cuál es el propósito principal de las direcciones o unidades administrativas en los departamentos de la Administración de la Comunidad Autónoma, según el texto?',
+        'options': [
+            'Designar un embajador de igualdad en cada departamento para promover la sensibilización.',
+            'Asegurar que cada departamento tenga una unidad administrativa para impulsar y coordinar la ejecución de la ley de igualdad. ',
+            'Crear un fondo de inversión para financiar proyectos que promuevan la igualdad de género.',
+            'Establecer un sistema de incentivos para los departamentos que cumplan con los objetivos de igualdad.',
+        ],
+        'answer': 'Asegurar que cada departamento tenga una unidad administrativa para impulsar y coordinar la ejecución de la ley de igualdad. ',
+    },
+    {
+        'question': '¿Qué deben asegurar los poderes públicos en el proceso hacia la igualdad de sexos?',
+        'options': [
+            'Priorizar la igualdad formal ante la ley, sin considerar las diferencias individuales.',
+            'Focalizar los esfuerzos en eliminar las diferencias económicas, dejando de lado otras formas de diversidad.',
+            'Garantizar la homogeneidad de oportunidades, sin tener en cuenta la diversidad de aspiraciones.',
+            'Asegurar que el avance hacia la igualdad respete la diversidad entre mujeres y hombres, así como la diversidad dentro de cada grupo. ',
+        ],
+        'answer': 'Asegurar que el avance hacia la igualdad respete la diversidad entre mujeres y hombres, así como la diversidad dentro de cada grupo. ',
+    },
+    {
+        'question': 'De acuerdo con el texto, ¿cuál es una de las responsabilidades clave de las administraciones públicas vascas en la lucha contra la discriminación?',
+        'options': [
+            'Ofrecer asesoría legal gratuita a víctimas de discriminación en el ámbito privado.',
+            'Detectar situaciones de discriminación y diseñar medidas para su erradicación en su ámbito territorial. ',
+            'Mediar en conflictos laborales donde se alegue discriminación por razón de género.',
+            'Sancionar a empresas que no cumplan con los estándares de igualdad salarial.',
+        ],
+        'answer': 'Detectar situaciones de discriminación y diseñar medidas para su erradicación en su ámbito territorial. ',
+    },
+    {
+        'question': '¿Qué deben promover las administraciones públicas vascas en relación con los acuerdos de la Comisión Interinstitucional para la Igualdad de Mujeres y Hombres?',
+        'options': [
+            'Modificar los aspectos para adaptarse a las necesidades específicas de cada territorio histórico.',
+            'Promover la aplicación de los acuerdos dirigidos a la aplicación de estándares de calidad en las políticas públicas de igualdad. ',
+            'Difundir los acuerdos entre la población general a través de campañas de sensibilización.',
+            'Evaluar la viabilidad económica de los acuerdos antes de su implementación.',
+        ],
+        'answer': 'Promover la aplicación de los acuerdos dirigidos a la aplicación de estándares de calidad en las políticas públicas de igualdad. ',
+    },
+    {
+        'question': '¿Qué deben incluir las normas o actos administrativos que regulen los procesos selectivos de acceso, provisivas y promoción en el empleo público?',
+        'options': [
+            'La eliminación de cualquier criterio de género en la sedección, priorizando únicamente la experiencia laboral.',
+            'Una cláusula que de prioridad a la mujeres es establecida igualdad de capacitación, en aquellos cuerpos donde son representación sea mayor al 40%. ',
+            'Una oportunidad sobre un desastre un potencial de fin de plazas para moverse, independientemente de su capacitación.',
+            'Medidas de acción positiva para favorecer a los hombres en aquellos puestos donde estén subrepresentados.',
+        ],
+        'answer': 'Una cláusula que de prioridad a la mujeres es establecida igualdad de capacitación, en aquellos cuerpos donde son representación sea mayor al 40%. ',
+    },
+    {
+        'question': '¿Qué acción especifica corresponde a las administraciones forales y locales en el marco de las competencias, según el texto?',
+        'options': [
+            'Financiar proyectos de investigación sobre la brecha salarial entre hombres y mujeres.',
+            'Crear y regular actividades administrativas de igualdad en sus organismos y organizaciones y departamentos. ',
+            'Establecer un registro público de empresas comprometidas con la igualdad de género.',
+            'Organizar cursos de formación para empleados públicos sobre igualdad de oportunidades.',
+        ],
+        'answer': 'Crear y regular actividades administrativas de igualdad en sus organismos y organizaciones y departamentos. ',
+    },
+    {
+        'question': '¿Qué deben hacer los poderes públicos vascos con respecto a la integración de la perspectiva de género bajo la formación de su personal, según el artículo 38.3.2?',
+        'options': [
+            'Subformar la formación en perspectiva de género a empresas especializadas externas.',
+            'Laminar la formación en perspectiva de género exclusivamente a los cursos específicos sobre igualdad de género.',
+            'Impactar la perspectiva de género en la formación que no sea específica sobre igualdad de mujeres y hombres, aprobando sus ideas formativas y realizando los auditores correspondientes. ',
+            'Ofrecer formación en perspectiva de género solo a aquellos empleados que lo soliciten voluntariamente.',
+        ],
+        'answer': 'Impactar la perspectiva de género en la formación que no sea específica sobre igualdad de mujeres y hombres, aprobando sus ideas formativas y realizando los auditores correspondientes. ',
+    },
+    {
+        'question': '¿Qué implica la integración de la perspectiva de género por parte de los poderes públicos?',
+        'options': [
+            'Garantizar la representación equilibrada en puestos de poder, sin considerar las condiciones de vida.',
+            'Asegurar que haya igualdad en el acceso al empleo y a la educación, dejando de lado otros aspectos.',
+            'Promover la igualdad salarial como el principal objetivo, sin considerar otras dimensiones de la desigualdad.',
+            'Incorporar la perspectiva de género en todos las políticas, buscando eliminar desigualdades y promover la igualdad en todas las fases. ',
+        ],
+        'answer': 'Incorporar la perspectiva de género en todos las políticas, buscando eliminar desigualdades y promover la igualdad en todas las fases. ',
+    },
+    {
+        'question': '¿Qué deben adoptar el Parlamento Vasco y las juntas generales respecto a las proposiciones de ley y normas forales?',
+        'options': [
+            'Una declaración de intenciones reafirmando su compromiso con la igualdad de género, sin medidas concretas.',
+            'Únicamente medidas para garantizar la realidad de la disposición de las comisiones parlamentarias.',
+            'Un informe anual sobre las políticas de igualdad, mejor entradas, sin necesidad de evaluar el impacto de cada proposición.',
+            'Medidas para evaluar el impacto en función del género e incluir acciones para promover la igualdad de mujeres y hombres. ',
+        ],
+        'answer': 'Medidas para evaluar el impacto en función del género e incluir acciones para promover la igualdad de mujeres y hombres. ',
+    },
+    {
+        'question': '¿Cuál de las siguientes acciones es una función primordial de las administraciones públicas vascas según el texto, en relación con la igualdad de género?',
+        'options': [
+            'Promover eventos culturales que reflejen la diversidad de roles de género en la sociedad actual.',
+            'Desarrollar campañas de publicidad que muestren a hombres y mujeres en roles no tradicionales.',
+            'Sensibilizar a la ciudadanía sobre la desigualdad entre mujeres y hombres, considerando las discriminaciones múltiples. ',
+            'Elaborar informes estadísticos sobre la percepción de la igualdad en diferentes grupos de edad.',
+        ],
+        'answer': 'Sensibilizar a la ciudadanía sobre la desigualdad entre mujeres y hombres, considerando las discriminaciones múltiples. ',
+    },
+    {
+        'question': '¿Qué órgano administrativo debe hacer un seguimiento de la efectividad de las medidas incluidas en la página para eliminar desigualdades y promover la igualdad?',
+        'options': [
+            'El Consejo de Gobierno.',
+            'El Ayuntamiento Vasco de la Mujer.',
+            'El Organismo Vasco.',
+            'El Organismo Administrativo que promueva la norma. ',
+        ],
+        'answer': 'El Organismo Administrativo que promueva la norma. ',
+    },
+    {
+        'question': '¿Qué organismo se crea en el seno de Cantabunde Instituto Vasco de la Mujer, según el artículo 17.2, para supervisar la igualdad de género en la Comunidad Autónoma de Euskadi?',
+        'options': [
+            'El Instituto Vasco de la Mujer, como un organismo para promover la práctica por política de las mujeres.',
+            'El Consejo Vasco de Políticas Sociales, como un ente para desarrollar programas de apoyo a familias vulnerables.',
+            'El Observatorio Vasco para la Igualdad de Mujeres y Hombres, como un instrumento para disponer de una visión global y permanente de la situación y evolución de la igualdad de mujeres y hombres en la Comunidad Autónoma de Euskadi. ',
+            'El Departamento de Igualdad del Gobierno Vasco, como una entidad para coordinar acciones contra la violencia de género.',
+        ],
+        'answer': 'El Observatorio Vasco para la Igualdad de Mujeres y Hombres, como un instrumento para disponer de una visión global y permanente de la situación y evolución de la igualdad de mujeres y hombres en la Comunidad Autónoma de Euskadi. ',
+    },
+    {
+        'question': '¿Qué implica la igualdad de oportunidades según lo establecido por los poderes públicos/asceso?',
+        'options': [
+            'Los poderes públicos deben supervisar que se cumpla la igualdad en todos los ámbitos, por necesidad de garantizar el ejercicio efectivo de los derechos.',
+            'Los poderes públicos deben garantizar la igualdad únicamente en el ámbito laboral y económico, explorando otros derechos.',
+            'Los poderes públicos deben asegurar que mujeres y hombres tengan igualdad no solo al inicio, sino también en el ejercicio y control de los derechos. ',
+            'Los poderes públicos deben fomentar la igualdad solo en el proceso inicial a los derechos, sin considerar el ejercicio continuo.',
+        ],
+        'answer': 'Los poderes públicos deben asegurar que mujeres y hombres tengan igualdad no solo al inicio, sino también en el ejercicio y control de los derechos. ',
+    },
+    {
+        'question': '¿Qué exige el artículo 20.1 a las administraciones públicas vascas al elaborar una nueva norma?',
+        'options': [
+            'Evaluar el impacto potencial de la forma en la situación de mujeres y hombres. ',
+            'Consultar con expertos internacionales para asegurar la conformidad con estándares globales de igualdad de género.',
+            'Assegurar la financiación necesaria para implementar la norma sin considerar su impacto en la igualdad de género.',
+            'Realizar una encuesta de opinión pública para determinar la percepción de la ciudadanía sobre la igualdad de género.',
+        ],
+        'answer': 'Evaluar el impacto potencial de la forma en la situación de mujeres y hombres. ',
+    },
+    {
+        'question': '¿Qué deben adoptar los poderes públicos vascos en relación con la formación de su personal en materia de igualdad de género, según el artículo 18.1?',
+        'options': [
+            'Ofrecer cursos de sensibilización en igualdad de género solo para el personal directivo.',
+            'Realizar campañas informativas sobre igualdad de género dirigidas a la ciudadanía en general.',
+            'Adoptar medidas para una formación básica, progresiva, permanente y obligatoria en materia de igualdad de mujeres y hombres y perspectiva de igualdad de todo su personal. ',
+            'Promover la formación en igualdad de género y recaudar para el personal de nuevo ingreso.',
+        ],
+        'answer': 'Adoptar medidas para una formación básica, progresiva, permanente y obligatoria en materia de igualdad de mujeres y hombres y perspectiva de igualdad de todo su personal. ',
+    },
+           
+         // Preguntas de TEMAS NUEVOS 3
+    ],
+    
+},
+ {
+        name: 'TEMA 04',
+        questions: [
+          {
+        'question': '¿Cuál es el objeto principal del decreto según el Artículo V?',
+        'options': [
+            'Definir los protocolos de actuación policial en manifestaciones y eventos públicos.',
+            'Establecer las directrices para la instalación de sistemas de videovigilancia en edificios públicos del País Vasco.',
+            'Coordinar la colaboración entre la Ertzaintza y la Policía Local en materia de seguridad ciudadana.',
+            'Regular el registro de autorización y uso de videocámaras por la Policía del País Vasco. ',
+        ],
+        'answer': 'Regular el registro de autorización y uso de videocámaras por la Policía del País Vasco. ',
+    },
+    {
+        'question': '¿Qué medida establece el Decreto 168/1990 en relación con la supervisión del uso de videocámaras?',
+        'options': [
+            'Eliminar cualquier forma de control externo sobre el uso de videocámaras por parte de la policía.',
+            'Delegar en la Audiencia Nacional la supervisión del uso de videocámaras de videovigilancia.',
+            'Crear una Comisión de Videovigilancia y Libertades bajo los principios contenidos en la Ley Orgánica 4/1997. ',
+            'Establecer un sistema de autorregulación por parte de las propias fuerzas policiales.',
+        ],
+        'answer': 'Crear una Comisión de Videovigilancia y Libertades bajo los principios contenidos en la Ley Orgánica 4/1997. ',
+    },
+    {
+        'question': '¿A quién corresponde la custodia y conservación de las grabaciones obtenidas a través de videocámaras, así como la resolución de los derechos de acceso y cancelación?',
+        'options': [
+            'La Dirección de Tráfico y Parque Móvil del Gobierno Vasco en todos los casos.',
+            'El Departamento de Interior del Gobierno Vasco.',
+            'La Comisión de Videovigilancia y Libertades.',
+            'Los órganos que determine la resolución que ordene su instalación y utilización. ',
+        ],
+        'answer': 'Los órganos que determine la resolución que ordene su instalación y utilización. ',
+    },
+    {
+        'question': '¿A quién corresponde la custodia y conservación de las grabaciones, así como la resolución de los derechos de acceso y cancelación, en el caso de instalaciones de guardia por la Dirección de Tráfico y Parque Móvil del Gobierno Vasco?',
+        'options': [
+            'A una comisión designada conjuntamente por el Departamento de Interior y la Dirección de Tráfico y Parque Móvil.',
+            'Exclusivamente a los responsables de los servicios territoriales de tráfico designados por la Dirección de Tráfico y Parque Móvil.',
+            'Directamente a la Dirección de Tráfico y Parque Móvil, que centralizará todas las solicitudes y gestiones.',
+            'A los órganos que fije la resolución que ordene la instalación y utilización, incluyendo a los responsables de los servicios territoriales de tráfico o de los centros de control y gestión del tráfico. ',
+        ],
+        'answer': 'A los órganos que fije la resolución que ordene la instalación y utilización, incluyendo a los responsables de los servicios territoriales de tráfico o de los centros de control y gestión del tráfico. ',
+    },
+    {
+        'question': '¿Cuál es el plazo máximo de conservación de las grabaciones obtenidas a través de videocámaras?',
+        'options': [
+            'Tres meses desde su captación, prorrogables por otros tres meses si existe justificación por motivos de seguridad ciudadana.',
+            'Un mes desde su captación salvo que estén relacionados con infracciones penales o administrativas, investigación policial en curso o procedimiento judicial o administrativo abierto. ',
+            'Seis meses desde su captación, con posibilidad de renovación anual si así lo decide la Comisión de Videovigilancia y Libertades.',
+            'Un año desde su captación, salvo que pueda extenderse indefinidamente si las grabaciones se consideran de interés histórico.',
+        ],
+        'answer': 'Un mes desde su captación salvo que estén relacionados con infracciones penales o administrativas, investigación policial en curso o procedimiento judicial o administrativo abierto. ',
+    },
+    {
+        'question': '¿Qué función específica corresponde a Videoconsejo de Seguridad en relación con las videocámaras, según el Artículo 24?',
+        'options': [
+            'Representar el tratamiento de tipos internacionales sobre seguridad ciudadana.',
+            'Autorizar la instalación fija de videocámaras por la Ertzaintza y los cuerpos de Policía Local. ',
+            'Coordinar la formación de los agentes de la Ertzaintza en materia de videovigilancia.',
+            'Gestionar la recuperación destinada a la adquisición de nuevas videocámaras.',
+        ],
+        'answer': 'Autorizar la instalación fija de videocámaras por la Ertzaintza y los cuerpos de Policía Local. ',
+    },
+    {
+        'question': '¿Cuál es una de las funciones principales de la Comisión de Videovigilancia y Libertades en relación con las resoluciones sobre el uso de videocámaras, según el texto?',
+        'options': [
+            'Coordinar la formación del personal encargado del manejo de las videocámaras.',
+            'Gestionar el número de autorizaciones de instalaciones fijas y móviles de videocámaras.',
+            'Emitir informes sobre la adecuación de la resolución a los principios de utilización previstos en la Ley Orgánica 4/1997. ',
+            'Resolver los recursos presentados contra las resoluciones de autorización de videocámaras.',
+        ],
+        'answer': 'Emitir informes sobre la adecuación de la resolución a los principios de utilización previstos en la Ley Orgánica 4/1997. ',
+    },
+    {
+        'question': '¿Qué debe hacerse si en una grabación se aprecian indicios de ilícito penal o infracción administrativa contra la seguridad?',
+        'options': [
+            'Informar a la Comisión de Videovigilancia y Libertades antes de cualquier acción.',
+            'Almacenar las grabaciones durante un plazo máximo de seis meses.',
+            'Remitir el soporte de las grabaciones a la autoridad judicial o órgano administrativo competente. ',
+            'Borrar las grabaciones después de 72 horas si no se identifica ningún delito.',
+        ],
+        'answer': 'Remitir el soporte de las grabaciones a la autoridad judicial o órgano administrativo competente. ',
+    },
+    {
+        'question': '¿Qué deben observar las personas que tienen acceso a las grabaciones por razón de su cargo, según el texto?',
+        'options': [
+            'Observar la debida reserva, confidencialidad y sigilo cuando se aprecien imágenes de personas determinadas o determinables. ',
+            'Garantizar el acceso a las grabaciones a cualquier ciudadano que lo solicite, en aras de la transparencia.',
+            'Informar a la Comisión de Videovigilancia y Libertades sobre cualquier incidencia relacionada con la seguridad de las grabaciones.',
+            'Realizar copias de seguridad de las grabaciones y custodiarlas en un lugar secreto.',
+        ],
+        'answer': 'Observar la debida reserva, confidencialidad y sigilo cuando se aprecien imágenes de personas determinadas o determinables. ',
+    },
+    {
+        'question': '¿Cuáles son los dos tipos de Comisiones de coordinación policial de ámbito local que se establecen?',
+        'options': [
+            'Comisiones en las capitales de los Territorios Históricos y Comisiones de ámbito comarcal. ',
+            'Comisiones a nivel provincial y Comisiones a nivel de ciudad.',
+            'Comisiones especializadas en materia de Seguridad ciudadana.',
+            'Comisiones en municipios de más de 30.000 habitantes.',
+        ],
+        'answer': 'Comisiones en las capitales de los Territorios Históricos y Comisiones de ámbito comarcal. ',
+    },
+    {
+        'question': '¿Quiénes componen las Comisiones de coordinación policial en las capitales?',
+        'options': [
+            'Presidente de la Diputación, Subdelegado del Gobierno, jefe de la Policía Local y un representante sindical.',
+            'Alcalde, delegado del Gobierno, jefe de la Policía Nacional, jefe de la Guardia Civil y un representante vecinal.',
+            'Alcalde, concejal de seguridad ciudadana, jefe de la Policía Local, jefe Territorial de la Ertzaintza, jefe de la Comisión de la Ertzaintza y jefe de la Ertzaintza (vicepresidente). ',
+            'Concejal de seguridad directo localizado, jefe de los derechos y un representante de protección civil.',
+        ],
+        'answer': 'Alcalde, concejal de seguridad ciudadana, jefe de la Policía Local, jefe Territorial de la Ertzaintza, jefe de la Comisión de la Ertzaintza y jefe de la Ertzaintza (vicepresidente). ',
+    },
+    {
+        'question': 'Según el artículo 9 de la Ley 15/2012, ¿qué es la función principal de las Comisiones de coordinación policial de ámbito local?',
+        'options': [
+            'Organizar las reglas de gestión de los recursos económicos destinados a la seguridad ciudadana.',
+            'Órganos de coordinación de los servicios policiales en la ejecución de intervenciones de esa índole entre Ertzaintza y Policías Locales. ',
+            'Órganos consultivos en materia de seguridad pública, encargados de emitir informes no vinculantes.',
+            'Empresas responsables de la formación continua de los agentes de policía local.',
+        ],
+        'answer': 'Órganos de coordinación de los servicios policiales en la ejecución de intervenciones de esa índole entre Ertzaintza y Policías Locales. ',
+    },
+    {
+        'question': '¿Quiénes pueden instar la convocatoria de una reunión de las Comisiones de coordinación policial de ámbito local con un orden del día específico?',
+        'options': [
+            'La Presidencia de la Ertzaintza y dos alcaldías con cuerpo de policía local o la mitad más uno de los integrantes que no lo tienen. ',
+            'Cualquier alcaldía, independientemente de si cuenta o no con cuerpo de policía local.',
+            'Un número mínimo de tres alcaldías, siempre que todas cuenten con cuerpo de policía local.',
+            'Solo la Dirección de la Ertzaintza, sin necesidad de acuerdo con alcaldías.',
+        ],
+        'answer': 'La Presidencia de la Ertzaintza y dos alcaldías con cuerpo de policía local o la mitad más uno de los integrantes que no lo tienen. ',
+    },
+    {
+        'question': 'En las Comisiones de coordinación policial de Bilbao, San Sebastián y Vitoria-Gasteiz, ¿quién ejerce la vicepresidencia?',
+        'options': [
+            'La persona que ostente la concejalía delegada del área de seguridad ciudadana.',
+            'La persona que ostente la alcaldía.',
+            'La persona que ostente la jefatura de la Policía Local.',
+            'La persona que ostente la jefatura de la Ertzaintza. ',
+        ],
+        'answer': 'La persona que ostente la jefatura de la Ertzaintza. ',
+    },
+    {
+        'question': '¿Cuáles se consideran necesario para el válido constitución de una Comisión de coordinación policial de ámbito local?',
+        'options': [
+            'La presencia de los representantes de la Ertzaintza.',
+            'La mayoría simple de todos los miembros de la Comisión.',
+            'La presencia de todos los representantes de la Ertzaintza y la mitad de las Administraciones Locales.',
+            'La presencia de los representantes de la Ertzaintza y de las Administraciones Locales. ',
+        ],
+        'answer': 'La presencia de los representantes de la Ertzaintza y de las Administraciones Locales. ',
+    },
+    {
+        'question': '¿Con qué frecuencia mínima deben reunirse las Comisiones de coordinación policial de ámbito local?',
+        'options': [
+            'Trimestralmente.',
+            'Cada seis meses.',
+            'Al menos una vez al año. ',
+            'Mensualmente.',
+        ],
+        'answer': 'Al menos una vez al año. ',
+    },
+    {
+        'question': 'En caso de vacante, ausencia o enfermedad del presidente de las Comisiones de coordinación policial en las capitales, ¿quién le sustituye en la totalidad de sus funciones?',
+        'options': [
+            'La persona que ostente la vicepresidencia. ',
+            'El jefe de la Policía Municipal con más años de servicio.',
+            'Un representante designado por el Gobierno Vasco.',
+            'El concejal de seguridad ciudadana de mayor edad.',
+        ],
+        'answer': 'La persona que ostente la vicepresidencia. ',
+    },
+    {
+        'question': '¿Quién está facultado para instar la convocatoria de una reunión de las Comisiones de coordinación policial de ámbito local, según el texto?',
+        'options': [
+            'Se requiere la unanimidad de todas las miembros para usar la convocatoria de reunión.',
+            'Solo las Alcaldías con cuerpo de policía local pueden instar la convocatoria de reunión.',
+            'Solo la Dirección de la Ertzaintza puede recibir una decisión de reunión.',
+            'La Dirección de la Ertzaintza y dos Alcaldías con cuerpo de policía local pueden instar la convocatoria de reunión. ',
+        ],
+        'answer': 'La Dirección de la Ertzaintza y dos Alcaldías con cuerpo de policía local pueden instar la convocatoria de reunión. ',
+    },
+    {
+        'question': '¿Qué se necesita para la válida adopción de acuerdos en las Comisiones de coordinación policial de ámbito local?',
+        'options': [
+            'El voto favorable de la mayoría simple de los representantes presentes, siempre que la Ertzaintza esté de acuerdo.',
+            'El voto favorable de la mitad más uno de los representantes de la Administración local y de la Ertzaintza. ',
+            'La unanimidad de todos los representantes presentes, sin importar la administración que representen.',
+            'El voto favorable de dos tercios de los representantes de la Administración local y la abstención de la Ertzaintza.',
+        ],
+        'answer': 'El voto favorable de la mitad más uno de los representantes de la Administración local y de la Ertzaintza. ',
+    },
+           
+         // Preguntas de TEMAS NUEVOS 4
+    ],
+    
+},
+ {
+        name: 'TEMA 06',
+        questions: [
+          
+		   {
+        'question': 'El plazo en el que debe notificarse la resolución expresa, salvo que una norma con rango de Ley establezca uno mayor o así venga previsto en el Derecho de la Unión Europea, no podrá exceder de:',
+        'options': [
+            '10 días hábiles.',
+            '1 mes.',
+            '3 meses.',
+            '6 meses. ',
+        ],
+        'answer': '6 meses. ',
+    },
+    {
+        'question': 'Cuando las normas reguladoras de los procedimientos no fijen el plazo máximo para notificar la resolución expresa, éste será de:',
+        'options': [
+            '10 días hábiles.',
+            '1 mes.',
+            '3 meses. ',
+            '6 meses.',
+        ],
+        'answer': '3 meses. ',
+    },
+    {
+        'question': 'El plazo para notificar la resolución expresa en los procedimientos iniciales de la obligación legal:',
+        'options': [
+            'Desde la fecha del acuerdo de iniciación. ',
+            'Desde la fecha de que la solicitud haya tenido entrada en el registro electrónico de la Administración u Organismo competente para su tramitación.',
+            'Desde el día siguiente, la fecha es que la solicitud haya tenido entrada en el registro electrónico de la Administración u Organismo competente para su tramitación.',
+            'Desde el día siguiente a la fecha del acuerdo de iniciación.',
+        ],
+        'answer': 'Desde la fecha del acuerdo de iniciación. ',
+    },
+    {
+        'question': 'Las Administraciones Públicas deben publicar y mantener actualizadas en el portal web con efectos informativos, las relaciones de procedimientos de su competencia con la comunicación de:',
+        'options': [
+            'Los recursos que procedan contra el procedimiento.',
+            'Los plazos mínimos de duración de los mismos.',
+            'Los recursos que procedan contra el procedimiento y los efectos que produzcan el silencio administrativo.',
+            'Los plazos máximos de duración de los mismos y los efectos que produzca el silencio administrativo. ',
+        ],
+        'answer': 'Los plazos máximos de duración de los mismos y los efectos que produzca el silencio administrativo. ',
+    },
+    {
+        'question': 'Se exceptúa de la obligación de la Administración de dictar resolución expresa (señala la incorrecta):',
+        'options': [
+            'Los requisitos de terminación del procedimiento por pacto.',
+            'Los procedimientos relativos al ejercicio de derechos sometidos libremente al deber de declaración responsable o comunicación a la Administración.',
+            'Los supuestos de terminación del procedimiento por convenio.',
+            'La desaparición sobrevenida del objeto del procedimiento administrativo. ',
+        ],
+        'answer': 'La desaparición sobrevenida del objeto del procedimiento administrativo. ',
+    },
+    {
+        'question': 'Cuando el número de las solicitudes formuladas o las personas afectadas pudieran suponer un incumplimiento del plazo máximo de resolución, podrán habilitar los medios personales y materiales para cumplir con el órgano adecuado y en plazo:',
+        'options': [
+            'El órgano competente para resolver, a propuesta razonada del órgano instructor, o el superior jerárquico del órgano competente para resolver, a propuesta de éste. ',
+            'El órgano instructor, a propuesta razonada del órgano competente para resolver, o el órgano competente para resolver, a propuesta de éste.',
+            'El órgano competente para resolver, a propuesta razonada del órgano instructor, o el superior jerárquico del órgano competente instructor, a propuesta de éste.',
+            'El órgano instructor, a propuesta razonada del órgano competente para resolver, o el superior jerárquico del órgano competente para resolver, a propuesta de éste.',
+        ],
+        'answer': 'El órgano competente para resolver, a propuesta razonada del órgano instructor, o el superior jerárquico del órgano competente para resolver, a propuesta de éste. ',
+    },
+    {
+        'question': 'Son directamente responsables, en el ámbito de sus competencias, del cumplimiento de la obligación legal de dictar resolución expresa en plazo:',
+        'options': [
+            'Los titulares de los órganos administrativos competentes para instruir.',
+            'Los titulares de los órganos administrativos competentes para resolver.',
+            'El personal al servicio de las Administraciones Públicas que tenga a su cargo el despacho de los asuntos.',
+            'Todas son correctas. ',
+        ],
+        'answer': 'Todas son correctas. ',
+    },
+    {
+        'question': 'El transcurso del plazo máximo legal para resolver un procedimiento y notificar la resolución se suspenderá cuando:',
+        'options': [
+            'Una Administración Pública requiera a otra parte que anule o revise un acto que entienda que es legal y que consigue la base para el que la primera haya de dictar en el ámbito de sus competencias.',
+            'El órgano competente para resolver decida realizar alguna o alguna complementaria de las previstas en el artículo 87. ',
+            'Cualquier persona promueva la recusación en cualquier momento de la tramitación de un procedimiento.',
+            'Todas son correctas.',
+        ],
+        'answer': 'El órgano competente para resolver decida realizar alguna o alguna complementaria de las previstas en el artículo 87. ',
+    },
+    {
+        'question': 'En los procedimientos de revisión de oficio iniciados a solicitud de los interesados el sentido del silencio:',
+        'options': [
+            'Será estimatorio.',
+            'Será desestimatorio. ',
+            'Todos serán contactadas al procedimiento.',
+            'Todas serán correctas.',
+        ],
+        'answer': 'Será desestimatorio. ',
+    },
+    {
+        'question': 'Se entiende por documentos públicos administrativos:',
+        'options': [
+            'Los escritos emitidos por los miembros de las Administraciones Públicas. ',
+            'Los expedientes por personas físicas o jurídicas por los órganos de las Administraciones Públicas.',
+            'a y b son correctas.',
+            'a y b son incorrectas.',
+        ],
+        'answer': 'Los escritos emitidos por los miembros de las Administraciones Públicas. ',
+    },
+    {
+        'question': 'Las Administraciones Públicas existirán los documentos administrativos:',
+        'options': [
+            'Por escrito, a través de medios electrónicos, o verbalmente si así lo solicita el interesado.',
+            'Por escrito, a través de medios de referencia, a menos que su naturaleza exija una forma más adecuada de expresión y constancia.',
+            'Por escrito, a través de medios electrónicos, a menos que su naturaleza exija una forma más adecuada de expresión y constancia. ',
+            'Por escrito, a través de medios de referencia, o verbalmente si así lo solicita el interesado.',
+        ],
+        'answer': 'Por escrito, a través de medios electrónicos, a menos que su naturaleza exija una forma más adecuada de expresión y constancia. ',
+    },
+    {
+        'question': 'Para considerar válidos, los documentos electrónicos admitirán quienes deberían:',
+        'options': [
+            'Disponer datos de identificación que permitan su individualización.',
+            'Incorporar una referencia temporal comprometida en que han sido emitidos.',
+            'Incorporar las firmas electrónicas que correspondan de acuerdo con lo previsto en la normativa aplicable.',
+            'Todas son correctas. ',
+        ],
+        'answer': 'Todas son correctas. ',
+    },
+    {
+        'question': 'Las copias auténticas realizadas por una Administración Pública:',
+        'options': [
+            'Surten únicamente efectos administrativos.',
+            'No tendrán ningún efecto administrativo.',
+            'Únicamente tendrán validez en la misma Administración.',
+            'Tendrán validez en las restantes Administraciones. ',
+        ],
+        'answer': 'Tendrán validez en las restantes Administraciones. ',
+    },
+    {
+        'question': 'Tendrán la consideración de copia auténtica de un documento público administrativo o privado las realizadas:',
+        'options': [
+            'Mediante medios electrónicos, por los órganos competentes de las Administraciones Públicas en las que quede garantizada la identidad del órgano de la realidad o la copia y su contenido.',
+            'Cualquiera que sea su soporte, por los órganos competentes de las Administraciones Públicas en las que quede garantizada la identidad del órgano de la realidad o la copia.',
+            'Mediante medios electrónicos, por los órganos competentes de las Administraciones Públicas en las que quede garantizada la identidad del órgano de la realidad o la copia.',
+            'Cualquiera que sea su soporte, por los órganos competentes de las Administraciones Públicas en las que quede garantizada la identidad del órgano de la realidad o la copia y su contenido. ',
+        ],
+        'answer': 'Cualquiera que sea su soporte, por los órganos competentes de las Administraciones Públicas en las que quede garantizada la identidad del órgano de la realidad o la copia y su contenido. ',
+    },
+    {
+        'question': 'Las copias auténticas:',
+        'options': [
+            'Tendrán la misma validez y eficacia que los documentos originales. ',
+            'Siempre que se trate de documentos no electrónicos tendrán la misma validez y eficacia que los documentos originales.',
+            'Tendrán la misma validez y eficacia que los documentos originales durante los siguientes 10 años de su expedición.',
+            'Tendrán la misma validez y eficacia que los documentos originales siempre y cuando vayan acompañadas de estos últimos.',
+        ],
+        'answer': 'Tendrán la misma validez y eficacia que los documentos originales. ',
+    },
+    {
+        'question': 'Las copias auténticas de los documentos públicos administrativos que hayan sido válidamente emitidos por las Administraciones Públicas se expedirán en un plazo de:',
+        'options': [
+            '10 días desde la recepción de la solicitud en el registro electrónico de la Administración u Organismo competente.',
+            '24 días desde la recepción de la solicitud en el registro electrónico de la Administración u Organismo competente. ',
+            '20 días desde la recepción de la solicitud en el registro electrónico de la Administración u Organismo competente.',
+            '30 días desde la recepción de la solicitud en el registro electrónico de la Administración u Organismo competente.',
+        ],
+        'answer': '24 días desde la recepción de la solicitud en el registro electrónico de la Administración u Organismo competente. ',
+    },
+    {
+        'question': 'No es correcto respecto a los interesados:',
+        'options': [
+            'Deberán aportar al procedimiento administrativo los datos y documentos exigidos por las Administraciones Públicas de acuerdo con lo dispuesto en la normativa aplicable.',
+            'No podrán aportar cualquier documento que estimen conveniente. ',
+            'Tienen derecho a no aportar documentos que ya se encuentren en poder de la Administración.',
+            'Tienen derecho a no aportar documentos que ya hayan sido elaborados por cualquier otra Administración.',
+        ],
+        'answer': 'No podrán aportar cualquier documento que estimen conveniente. ',
+    },
+    {
+        'question': 'Cuando se trate de informes preceptivos, sea elaborado por un órgano administrativo distinto al que tramita el procedimiento, debe ser emitido en el plazo de:',
+        'options': [
+            '10 días a contar desde su solicitud. ',
+            '15 días a contar desde su solicitud.',
+            '20 días a contar desde su solicitud.',
+            '30 días a contar desde su solicitud.',
+        ],
+        'answer': '10 días a contar desde su solicitud. ',
+    },
+    {
+        'question': 'Las Administraciones no exigirán a los interesados la presentación de documentos originales:',
+        'options': [
+            'En ningún caso.',
+            'Salvo que ya obren en poder de la Administración.',
+            'Salvo que, con carácter excepcional, la normativa reguladora aplicable establezca lo contrario. ',
+            'Ninguna es correcta.',
+        ],
+        'answer': 'Salvo que, con carácter excepcional, la normativa reguladora aplicable establezca lo contrario. ',
+    },
+    {
+        'question': 'Señala la incorrecta:',
+        'options': [
+            'Excepcionalmente, cuando la relevancia del documento en el procedimiento lo exija o existan dudas derivadas de la calidad de la copia, las Administraciones podrán solicitar de manera motivada el cotejo de las copias aportadas por el interesado, para lo que podrán requerir la exhibición del documento o de la información original.',
+            'Las copias que aporten los interesados al procedimiento administrativo tendrán eficacia, dentro y fuera del ámbito de la actividad de las Administraciones Públicas. ',
+            'Los interesados se responsabilizarán de la veracidad de los documentos que presenten.',
+            'Todas son correctas.',
+        ],
+        'answer': 'Las copias que aporten los interesados al procedimiento administrativo tendrán eficacia, dentro y fuera del ámbito de la actividad de las Administraciones Públicas. ',
+    },
+    {
+        'question': '¿Quién promoverá la realización de estudios, informes y estadísticas tendentes a delimitar la magnitud de la violencia sexual en España?',
+        'options': [
+            'El Gobierno.',
+            'El Observatorio de Violencia de Género.',
+            'El Ministerio de Interior. ',
+            'El Ministerio de Justicia.',
+        ],
+        'answer': 'El Ministerio de Interior. ',
+    },
+    {
+        'question': 'Las medidas de evaluación del riesgo y de protección están orientadas a garantizar:',
+        'options': [
+            'La repetición de la referencia.',
+            'Brindar protección ante amenazas.',
+            'Brindar protección ante represalias.',
+            'Las opciones b y c son correctas. ',
+        ],
+        'answer': 'Las opciones b y c son correctas. ',
+    },
+    {
+        'question': '¿Las medidas mencionadas arriba se mantendrán en caso de sobreseimiento provisional?',
+        'options': [
+            'Sí siempre.',
+            'No, en ningún caso.',
+            'Se pueden mantener si se acredita su necesidad. ',
+            'Seguir los casos, respetando el derecho a la intimidad de los investigados.',
+        ],
+        'answer': 'Se pueden mantener si se acredita su necesidad. ',
+    },
+    {
+        'question': 'En cuanto a la protección de las víctimas en riesgo, a través de las unidades especializadas, se deberá (señala la incorrecta):',
+        'options': [
+            'Cumplir el cumplimiento de las medidas acordadas por los órganos judiciales.',
+            'Vigilar a los contagiados.',
+            'Vigilar a los contagiados a través de dispositivos telemáticos.',
+            'Protección de los investigados a través de dispositivos telemáticos. ',
+        ],
+        'answer': 'Protección de los investigados a través de dispositivos telemáticos. ',
+    },
+    {
+        'question': '¿Quién promoverá la formación y la colaboración de las policías autonómicas y locales con la finalidad de mejorar la respuesta policial frente a las distintas formas de violencia sexual?',
+        'options': [
+            'El Ministerio de Interior.',
+            'Los Estados Oficiales.',
+            'El Gobierno, para ello reclama y estimulará los acuerdos y protocolos en materia de colaboración entre los diferentes Cuerpos y Fuerzas de Seguridad. ',
+            'Todas las respuestas son incorrectas.',
+        ],
+        'answer': 'El Gobierno, para ello reclama y estimulará los acuerdos y protocolos en materia de colaboración entre los diferentes Cuerpos y Fuerzas de Seguridad. ',
+    },
+    {
+        'question': 'En cuanto a su régimen económico y presupuestario, la Autoridad Vasca de Protección de Datos elaborará y aprobará el correspondiente anteproyecto de presupuesto con carácter:',
+        'options': [
+            'Bianual.',
+            'Semestral.',
+            'Anual.',
+            'Mensual. ',
+        ],
+        'answer': 'Mensual. ',
+    },
+    {
+        'question': 'En cuanto a su régimen económico y presupuestario, la Autoridad Vasca de Protección de Datos elaborará y aprobará el correspondiente anteproyecto de presupuesto, y lo remitirá para que sea integrado en los presupuestos generales de la CAPV a:',
+        'options': [
+            'El Parlamento Vasco.',
+            'El Lehendakari.',
+            'El departamento correspondiente. ',
+            'Al Gobierno Vasco.',
+        ],
+        'answer': 'El departamento correspondiente. ',
+    },
+    {
+        'question': 'La Autoridad Vasca de Protección de Datos estará sometida:',
+        'options': [
+            'Al control económico-financiero y de gestión de la Comunidad Autónoma del País Vasco. ',
+            'A la fiscalización del Tribunal Vasco de Cuentas Públicas.',
+            'Las opciones a) y b) son correctas.',
+            'Las opciones a) y b) son incorrectas.',
+        ],
+        'answer': 'Al control económico-financiero y de gestión de la Comunidad Autónoma del País Vasco. ',
+    },
+    {
+        'question': 'La relación de puestos de trabajo de la Autoridad Vasca de Protección de Datos será aprobada por resolución de su presidencia y entrará en vigor:',
+        'options': [
+            'El día de su publicación en el «Boletín Oficial del País Vasco». ',
+            'Al día siguiente de su publicación en el «Boletín Oficial del País Vasco».',
+            'El día de su publicación en el «Boletín Oficial del Estado».',
+            'Al día siguiente de su publicación en el «Boletín Oficial del Estado».',
+        ],
+        'answer': 'El día de su publicación en el «Boletín Oficial del País Vasco». ',
+    },
+    {
+        'question': 'Los actos de la autoridad vasca que produzcan efectos jurídicos sobre terceros serán dictados por:',
+        'options': [
+            'Su presidencia. ',
+            'El Parlamento Vasco.',
+            'El Gobierno Vasco.',
+            'Ninguna es correcta.',
+        ],
+        'answer': 'Su presidencia. ',
+    },
+    {
+        'question': 'La Presidencia de la Autoridad Vasca de Protección de Datos será designada por:',
+        'options': [
+            'El Parlamento Vasco.',
+            'El Gobierno Vasco. ',
+            'El Valentamiento.',
+            'Ninguna opción es correcta.',
+        ],
+        'answer': 'El Gobierno Vasco. ',
+    },
+    {
+        'question': 'La Presidencia de la Autoridad Vasca de Protección de Datos será nombrada por un período de:',
+        'options': [
+            'Dos años.',
+            'Cinco años. ',
+            'Tres años.',
+            'Cuatro años.',
+        ],
+        'answer': 'Cinco años. ',
+    },
+    {
+        'question': 'La presidencia de la Autoridad Vasca de Protección de Datos será nombrada por un período de:',
+        'options': [
+            'Dos años, pudiendo ser renovada por un único período de la mitad de duración.',
+            'Cinco años, pudiendo ser renovada por un único período de la mitad de duración. ',
+            'Tres años, pudiendo ser renovada por un único período de la mitad de duración.',
+            'Cuatro años, pudiendo ser renovada por un único período de igual duración.',
+        ],
+        'answer': 'Cinco años, pudiendo ser renovada por un único período de la mitad de duración. ',
+    },
+    {
+        'question': 'Los actos y disposiciones dictadas por la presidencia de la Autoridad Vasca de Protección de Datos:',
+        'options': [
+            'Ponen fin a la vía administrativa.',
+            'No ponen fin a la vía administrativa.',
+            'Son recurribles directamente ante la jurisdicción contencioso-administrativa.',
+            'Las opciones a y c son incorrectas. ',
+        ],
+        'answer': 'Las opciones a y c son incorrectas. ',
+    },
+    {
+        'question': 'El Consejo Consultivo de la Autoridad Vasca de Protección de Datos está compuesto, entre otras, por:',
+        'options': [
+            'Una persona representante del Parlamento Vasco.',
+            'Una persona representante de la Administración general de la Comunidad Autónoma del País Vasco.',
+            'Una persona representante de cada uno de los territorios históricos vascos.',
+            'Todas las opciones son correctas. ',
+        ],
+        'answer': 'Todas las opciones son correctas. ',
+    },
+    {
+        'question': '¿Qué medidas se deben implementar para garantizar la eficacia de la articulación interinstitucional e intersectorial en la atención a la infancia y adolescencia?',
+        'options': [
+            'Mantener la independencia operativa de esta institución, evitando la creación de protocolos que puedan limitar la flexibilidad en la toma de decisiones.',
+            'Priorizar la colaboración informal entre instituciones, confiando en la buena voluntad de los actores involucrados sin necesidad de formalismos.',
+            'Establecer cauces formales y ágiles de colaboración, cooperación y coordinación interinstitucional e intersectorial, implementando instrumentos técnicos y protocolos. ',
+            'Centralizar la coordinación en una única institución, delegando en ella la responsabilidad de articular las políticas y acciones en favor de la infancia.',
+        ],
+        'answer': 'Establecer cauces formales y ágiles de colaboración, cooperación y coordinación interinstitucional e intersectorial, implementando instrumentos técnicos y protocolos. ',
+    },
+    {
+        'question': '¿A qué se refiere el concepto de ‘reparación integral’ en la ley?',
+        'options': [
+            'La reubicación del menor en un entorno familiar adecuado para alejarlo de la situación de riesgo, sin abordar las causas subyacentes del problema.',
+            'Medidas disciplinarias para corregir la conducta del menor y evitar que vuelva a encontrarse en situaciones de vulnerabilidad o desprotección.',
+            'Un programa de asistencia psicológica intensiva para menores que han experimentado situaciones de violencia, sin considerar la restitución de sus derechos.',
+            'Actuaciones dirigidas a reparar el daño sufrido por el menor o restituir sus derechos vulnerados debido a violencia, desprotección o vulnerabilidad. ',
+        ],
+        'answer': 'Actuaciones dirigidas a reparar el daño sufrido por el menor o restituir sus derechos vulnerados debido a violencia, desprotección o vulnerabilidad. ',
+    },
+    {
+        'question': 'Según el texto, ¿qué se entiende por atención en el contexto de esta ley?',
+        'options': [
+            'El apoyo económico a familias en situación de vulnerabilidad.',
+            'La aplicación de medidas disciplinarias en situaciones de conflicto circular.',
+            'La intervención directa en casos de violencia y desprotección infantil.',
+            'El conjunto de políticas, estrategias y actuaciones que garantizan el ejercicio de los derechos de las personas infantes, así como su desarrollo integral y armónico. ',
+        ],
+        'answer': 'El conjunto de políticas, estrategias y actuaciones que garantizan el ejercicio de los derechos de las personas infantes, así como su desarrollo integral y armónico. ',
+    },
+    {
+        'question': '¿Cuál de los siguientes ejes de actuación prioriza las administraciones públicas vascas para garantizar los derechos de los menores?',
+        'options': [
+            'La promoción del bienestar de la infancia y la adolescencia, el ejercicio efectivo de sus derechos y la asunción de sus deberes. ',
+            'La promoción de actividades recreativas y deportivas que fomenten la socialización entre menores, sin considerar sus derechos individuales.',
+            'El control y la regulación de la información a la que acceden los menores, priorizando la protección interna, por fines sancionadores general.',
+            'La supervisión exhaustiva del cumplimiento de los deberes por parte de los menores, garantizando la imposición de sanciones en caso de incumplimiento.',
+        ],
+        'answer': 'La promoción del bienestar de la infancia y la adolescencia, el ejercicio efectivo de sus derechos y la asunción de sus deberes. ',
+    },
+    {
+        'question': '¿Qué medidas se deben adoptar para adquirir la eficacia de la articulación interinstitucional en la atención a la infancia y la adolescencia?',
+        'options': [
+            'Limitar la colaboración a aquellas instituciones que tengan un interés directo en la protección de la infancia, excluyendo a otras.',
+            'Establecer el momento conexo informado de comunicación entre informadores, sin necesidad de protocolos técnicos.',
+            'Dejar la colaboración interinstitucional a la discreción de cada administración, sin establecer cauces obligatorios.',
+            'Establecer cauces formales y ágiles de colaboración interinstitucional e intersectorial e implementar nuevos términos y protocolos de colaboración y cooperación. ',
+        ],
+        'answer': 'Establecer cauces formales y ágiles de colaboración interinstitucional e intersectorial e implementar nuevos términos y protocolos de colaboración y cooperación. ',
+    },
+    {
+        'question': '¿Cómo define la ley el período de adolescencia?',
+        'options': [
+            'El período de vida comprendido entre la edad de diez y dieciocho años.',
+            'El período de vida comprendido entre la edad de trece años y la mayoría de edad establecida por ley o la emancipación. ',
+            'El período de vida comprendido entre la edad de quince años y la mayoría de edad.',
+            'Cualquier persona mayor de doce años.',
+        ],
+        'answer': 'El período de vida comprendido entre la edad de trece años y la mayoría de edad establecida por ley o la emancipación. ',
+    },
+    {
+        'question': '¿Cuál es uno de los enfoques principales en la acción preventiva?',
+        'options': [
+            'Potenciar los factores de protección, vinculados a la promoción del bienestar infantil y adolescente. ',
+            'Mitigar los factores de riesgo, pero sin considerar las estrategias de promoción del bienestar.',
+            'Desarrollar estrategias correctivas, dejando de lado las preventivas.',
+            'Intervenir únicamente en situaciones de violencia o desprotección ya existentes.',
+        ],
+        'answer': 'Potenciar los factores de protección, vinculados a la promoción del bienestar infantil y adolescente. ',
+    },
+    {
+        'question': '¿Cómo define la ley los conceptos de ‘niños y niñas’ y ‘adolescentes’?',
+        'options': [
+            'Niños y niñas son las personas entre el nacimiento y los doce años, mientras que adolescentes son aquellos entre los trece años y la mayoría de edad o emancipación. ',
+            'Niños y niñas son las personas entre el nacimiento y los once años, mientras que adolescentes son aquellos entre los doce años y la mayoría de edad o emancipación.',
+            'Niños y niñas son las personas entre el nacimiento y los once años, mientras que adolescentes son aquellos entre los once años y la mayoría de edad o emancipación.',
+            'Niños y niñas son las personas entre el nacimiento y los once años, mientras que adolescentes son aquellos entre los quince años y la mayoría de edad o emancipación.',
+        ],
+        'answer': 'Niños y niñas son las personas entre el nacimiento y los doce años, mientras que adolescentes son aquellos entre los trece años y la mayoría de edad o emancipación. ',
+    },
+    {
+        'question': '¿Qué se debe hacer si un menor solicita formular una denuncia por sí mismo en dependencias policiales?',
+        'options': [
+            'Se requerirá la presencia de un adulto responsable para validar la denuncia.',
+            'Se le informará de la necesidad de contar con asistencia jurídica antes de proceder.',
+            'Se le permitirá hacerlo sin necesidad de estar acompañado de una persona adulta. ',
+            'Se evaluará su madurez y capacidad para comprender las implicaciones de la denuncia.',
+        ],
+        'answer': 'Se le permitirá hacerlo sin necesidad de estar acompañado de una persona adulta. ',
+    },
+    {
+        'question': '¿Qué abarca el concepto de prevención según la presente ley?',
+        'options': [
+            'La creación de recursos de acogida para menores en situación de desamparo, donde se les brinde atención integral y protección social.',
+            'La implementación de programas de educación sexual en las escuelas para prevenir embarazos no deseados y enfermedades de transmisión sexual.',
+            'Políticas, estrategias y actuaciones para evitar la aparición de situaciones o conductas que puedan perjudicar el desarrollo físico y psicológico de los menores. ',
+            'La intervención temprana en casos de abandono escolar para evitar que los menores sufran daños emocionales a largo plazo.',
+        ],
+        'answer': 'Políticas, estrategias y actuaciones para evitar la aparición de situaciones o conductas que puedan perjudicar el desarrollo físico y psicológico de los menores. ',
+    },
+    {
+        'question': '¿Qué comprende el término promoción en el contexto de esta ley?',
+        'options': [
+            'Campañas publicitarias dirigidas a los padres para que cumplan con sus obligaciones económicas y educativas hacia sus hijos menores de edad.',
+            'Programas de formación para profesionales del ámbito social y educativo sobre cómo detectar y prevenir situaciones de riesgo para los menores.',
+            'Medidas legislativas para endurecer las penas por delitos cometidos contra menores, con el fin de disuadir a los potenciales agresores.',
+            'Políticas, estrategias y actuaciones orientadas a promover el conocimiento, respeto y ejercicio de los derechos de los menores, así como la asunción de sus deberes y responsabilidades. ',
+        ],
+        'answer': 'Políticas, estrategias y actuaciones orientadas a promover el conocimiento, respeto y ejercicio de los derechos de los menores, así como la asunción de sus deberes y responsabilidades. ',
+    },
+    {
+        'question': '¿Cuál es el criterio principal que debe regir la actuación policial ante situaciones de violencia infantil, entre otros?',
+        'options': [
+            'El respeto a los derechos de las personas menores y la consideración de su interés superior como primordial.',
+            'La aplicación estricta de los protocolos de actuación policial sin considerar las particularidades del caso.',
+            'La celeridad en la investigación para determinar rápidamente la culpabilidad de los agresores.',
+            'La protección de la imagen pública de la institución policial ante posibles controles varios. ',
+        ],
+        'answer': 'La protección de la imagen pública de la institución policial ante posibles controles varios. ',
+    },
+    {
+        'question': '¿Qué acción específica se debe realizar al comprobar que un menor está en disposición de someterse a diligencias según el 2010?',
+        'options': [
+            'Consultar con un psicólogo infantil para evaluar la capacidad del menor de participar en las diligencias. ',
+            'Informar detalladamente al menor sobre el proceso legal y los derechos antes de cualquier intervención.',
+            'Practicar sin dilación todas las diligencias imprescindibles que impliquen la intervención del menor.',
+            'Esperar a que el menor exprese su consentimiento formal antes de proceder con cualquier diligencia.',
+        ],
+        'answer': 'Consultar con un psicólogo infantil para evaluar la capacidad del menor de participar en las diligencias. ',
+    },
+           
+         // Preguntas de TEMAS NUEVOS 6
+    ],
+    
+},
+ {
+        name: 'TEMA 09',
+        questions: [
+          
+		  {
+        'question': '¿A quién se aplica la Ley 4/2023, de 28 de febrero, según su artículo 27?',
+        'options': [
+            'Únicamente a las administraciones públicas y sus funcionarios.',
+            'A toda persona física o jurídica que resida, se encuentre o actúe en territorio español, independientemente de su nacionalidad, origen racial o étnico, religión, domicilio, residencia, edad, estado civil o situación administrativa.',
+            'A las empresas privadas que operen en España y tengan más de 50 empleados. ',
+            'Solo a los ciudadanos españoles que pertenezcan al colectivo LGTBI.',
+        ],
+        'answer': 'A las empresas privadas que operen en España y tengan más de 50 empleados. ',
+    },
+    {
+        'question': '¿Cuál de las siguientes opciones define con mayor precisión la discriminación directa según la Ley 4/2023?',
+        'options': [
+            'Situación en que una persona es tratada de manera menos favorable debido a su estatus socioeconómico, nivel educativo o profesión, siempre y cuando esta diferencia de trato no viole derechos fundamentales.',
+            'Situación en que una persona es tratada menos favorablemente debido a su orientación sexual, identidad sexual, expresión de género o características sexuales, incluyendo la denegación de ajustes razonables a personas con discapacidad. ',
+            'Situación en que una persona es tratada de manera menos favorable que otra en cualquier circunstancia, sin importar si la situación es aplicable o comparable, siempre que exista una justificación objetiva.',
+            'Situación en que una persona es tratada de manera diferente debido a su origen racial, religión o edad, siempre y cuando esta diferencia de trato no se base en criterios objetivos y razonables.',
+        ],
+        'answer': 'Situación en que una persona es tratada menos favorablemente debido a su orientación sexual, identidad sexual, expresión de género o características sexuales, incluyendo la denegación de ajustes razonables a personas con discapacidad. ',
+    },
+    {
+        'question': '¿Cuál es el papel de la Comisión Estatal contra la Violencia, el Racismo, la Xenofobia y la Intolerancia en el deporte en relación con las ONGs que trabajan contra la LGTBIfobia?',
+        'options': [
+            'Debe la Comisión Estatal contra la Violencia promover la colaboración con ONGs que luchan contra la LGTBIfobia en el deporte. ',
+            'Puede la Comisión Estatal colaborar con ONGs que promueven la LGTBIfobia si así lo considera necesario.',
+            'Es opcional para la Comisión Estatal colaborar con ONGs que trabajan contra la LGTBIfobia en el deporte.',
+            'La Comisión Estatal se limita a colaborar con ONGs que se centran en la violencia, no en LGTBIfobia.',
+        ],
+        'answer': 'Debe la Comisión Estatal contra la Violencia promover la colaboración con ONGs que luchan contra la LGTBIfobia en el deporte. ',
+    },
+    {
+        'question': '¿Qué tipo de apoyo a los comportamientos LGTBifóbicos en el deporte está expresamente prohibido por la ley?',
+        'options': [
+            'Se permite la facilitación de medios técnicos a grupos que contraten la LGTBIfobia, pero solo si no están aceptados.',
+            'Está prohibida la facilitación de medios a grupos que promuevan la LGTBIfobia en el deporte, incluyendo la creación de soportes digitales. ',
+            'Está permitida la facilitación de medios a grupos que promuevan la actividad en el deporte, siempre que no se use para crear sombras digitales.',
+            'Es obligatorio facilitar medios a grupos que promuevan comportamientos LGTBifóbicos con fines educativos en el deporte.',
+        ],
+        'answer': 'Está prohibida la facilitación de medios a grupos que promuevan la LGTBIfobia en el deporte, incluyendo la creación de soportes digitales. ',
+    },
+    {
+        'question': '¿En qué consiste la discriminación múltiple y interseccional según la Ley 4/2023?',
+        'options': [
+            'Cuando una persona es discriminada simultáneamente o consecutivamente por dos o más causas previstas en la ley, o cuando interactúan diversas causas generando una forma específica de discriminación. ',
+            'Cuando una persona es discriminada únicamente por su identidad de género sin considerar otros factores.',
+            'Cuando una persona es discriminada por su orientación sexual en el ámbito laboral.',
+            'Cuando una persona es discriminada por su origen étnico en el acceso a servicios públicos.',
+        ],
+        'answer': 'Cuando una persona es discriminada simultáneamente o consecutivamente por dos o más causas previstas en la ley, o cuando interactúan diversas causas generando una forma específica de discriminación. ',
+    },
+    {
+        'question': '¿Cuál de las siguientes opciones describe mejor la discriminación interseccional según la Ley 4/2023?',
+        'options': [
+            'Cuando una persona es discriminada por una causa principal que exacerba otras causas secundarias, resultando en un impacto desproporcionado en la víctima.',
+            'Cuando una persona es discriminada por múltiples causas de manera secuencial, pero cada causa se evalúa y sanciona de forma independiente.',
+            'Cuando una persona es discriminada simultáneamente por múltiples causas, pero la discriminación se considera solo en la medida en que cada causa es directamente relevante.',
+            'Cuando interactúan diversas causas de discriminación, generando una forma específica de discriminación que no se puede entender como la simple suma de las discriminaciones individuales. ',
+        ],
+        'answer': 'Cuando interactúan diversas causas de discriminación, generando una forma específica de discriminación que no se puede entender como la simple suma de las discriminaciones individuales. ',
+    },
+    {
+        'question': '¿Cuál de las siguientes opciones define mejor el acoso discriminatorio según la Ley 4/2023?',
+        'options': [
+            'Cualquier crítica o desarrollo es pensable de manera frecuentosa hacia las opiniones o el estilo de vida de una persona LGTBI, siempre y cuando se instale la violencia al odio.',
+            'Cualquier comentario o acción que pueda resultar ofensivo para una persona debido a su orientación sexual, siempre y cuando no se repita y no cause un daño psicológico significativo.',
+            'Cualquier acto de exclusión o marginación que pueda afectar a una persona LGTBI en el ámbito social o laboral, siempre y cuando no se demuestre una intención discriminatoria.',
+            'Cualquier conducta realizada por razón de alguna de las causas de discriminación previstas en esta ley, con el objetivo de atentar contra la dignidad de una persona y crear un entorno intimidatorio, hostil, degradante, humillante u ofensivo. ',
+        ],
+        'answer': 'Cualquier conducta realizada por razón de alguna de las causas de discriminación previstas en esta ley, con el objetivo de atentar contra la dignidad de una persona y crear un entorno intimidatorio, hostil, degradante, humillante u ofensivo. ',
+    },
+    {
+        'question': '¿Qué establece el Artículo 43.2 con respecto a la solicitud de rectificación registral por parte de menores de edad?',
+        'options': [
+            'Los menores de dieciséis años solo pueden presentar la solicitud a través de sus representantes legales, sin excepción.',
+            'Los menores de dieciséis años y mayores de catorce puedan presentar la solicitud sin asistencia legal solos si tienen la aprobación de un psicólogo.',
+            'Los menores de catorce años pueden presentar la solicitud directamente ante el juez, quien decidirá sobre la rectificación.',
+            'Los menores de dieciséis años y mayores de catorce puedan presentar la solicitud asistidos por sus representantes legales; en caso de desacuerdo se podrá acudir judicialmente. ',
+        ],
+        'answer': 'Los menores de dieciséis años y mayores de catorce puedan presentar la solicitud asistidos por sus representantes legales; en caso de desacuerdo se podrá acudir judicialmente. ',
+    },
+    {
+        'question': '¿Cuál de las siguientes acciones está prohibida en los recintos deportivos, según la ley?',
+        'options': [
+            'Se permite la entonación de cánticos neutrales sobre la orientación sexual en eventos deportivos',
+            ') Es obligación entonar cánticos de apoyo a la diversidad sexual en los eventos deportivos.',
+            'Es legal entonar cánticos que promuevan el respeto por la orientación sexual en eventos deportivos',
+            'Es ilegal entonar cánticos que impliquen los derechos de partido que inciten al odio por orientación sexual o identidad de género ',
+        ],
+        'answer': 'Es ilegal entonar cánticos que impliquen los derechos de partido que inciten al odio por orientación sexual o identidad de género ',
+    },
+    {
+        'question': '¿Qué se establece con respecto a la elección del nombre propio en la comparecencia ante el Registro Civil durante el procedimiento de rectificación registral?',
+        'options': [
+            'La elección del nombre propio queda a discreción del funcionario del Registro Civil, quien decidirá que se adecuará.',
+            'Solo se permite conservar el nombre original si se presenta una justificación legal que lo avale.',
+            'En la comparecencia ante el Registro Civil se debe incluir la elección de un nuevo nombre propio, salvo que la persona desee conservar el actual si es conforme a los principios de libre elección del nombre. ',
+            'Es obligación cambiar el nombre propio al solicitar la rectificación registral del sexo, sin excepciones.',
+        ],
+        'answer': 'En la comparecencia ante el Registro Civil se debe incluir la elección de un nuevo nombre propio, salvo que la persona desee conservar el actual si es conforme a los principios de libre elección del nombre. ',
+    },
+    {
+        'question': '¿Cuál es el plazo de prescripción para las infracciones graves?',
+        'options': [
+            'Dos años. ',
+            'Un año.',
+            'Nueve meses.',
+            'Tres años.',
+        ],
+        'answer': 'Dos años. ',
+    },
+    {
+        'question': '¿Cuáles son algunas de las sanciones o medidas accesorias que pueden imponerse a un infractor?',
+        'options': [
+            'La denegación de subvenciones, la prohibición de acceder a ayudas públicas y la prohibición de contratar con la Administración. ',
+            'Únicamente la prohibición de contratar con la Administración.',
+            'Solo la denegación de subvenciones.',
+            'La prohibición de acceder a ayudas públicas o altamente.',
+        ],
+        'answer': 'La denegación de subvenciones, la prohibición de acceder a ayudas públicas y la prohibición de contratar con la Administración. ',
+    },
+           
+         // Preguntas de TEMAS NUEVOS 9
+    ],
+    
+},
+ {
+        name: 'TEMA 10',
+        questions: [
+          
+		    {
+        'question': '¿Cuál es el enfoque principal de la formación que se debe garantizar al personal de seguridad y justicia, según el texto?',
+        'options': [
+            'La formación del personal de seguridad y justicia en la diversidad sexual, incluyendo la normativa protectora de las personas trans. ',
+            'La modificación de los códigos de comunicación y el cuerpo de seguridad para incluir la no discriminación por identidad sexual.',
+            'La promoción de políticas de inclusión laboral para personas trans en el ámbito de la seguridad y justicia.',
+            'La creación de un registro administrativo para el seguimiento de denuncias por discriminación contra personas trans.',
+        ],
+        'answer': 'La formación del personal de seguridad y justicia en la diversidad sexual, incluyendo la normativa protectora de las personas trans. ',
+    },
+    {
+        'question': '¿A qué profesionales específicamente incluye la ley en la formación sobre diversidad sexual?',
+        'options': [
+            'La formación obligatoria en diversidad sexual incluye policías, fiscales, personal de la Administración de Justicia y personal penitenciario. ',
+            'La formación se dirige exclusivamente a jueces y fiscales especializados en delitos de odio.',
+            'La formación se centra en el personal sanitario que atiende a personas trans.',
+            'La formación se centra en el personal de seguridad privado o de trabajos ambientales públicos.',
+        ],
+        'answer': 'La formación obligatoria en diversidad sexual incluye policías, fiscales, personal de la Administración de Justicia y personal penitenciario. ',
+    },
+    {
+        'question': '¿Qué aspectos específicos cubre la formación en diversidad sexual para el personal de seguridad y justicia?',
+        'options': [
+            'La formación se limita al examen de la legislación administrativa sobre cambio de nombre y sexo.',
+            'La formación se enfoca únicamente en la legislación penal relacionada con delitos de odio.',
+            'La formación abarca la diversidad en identidad sexual y la normativa civil, administrativa y penal protectora de las personas trans. ',
+            'La formación se centra en aspectos psicológicos de la identidad de género.',
+        ],
+        'answer': 'La formación abarca la diversidad en identidad sexual y la normativa civil, administrativa y penal protectora de las personas trans. ',
+    },
+    {
+        'question': 'Señala la opción correcta:',
+        'options': [
+            'La condición de transexualidad hace referencia a la situación por la que el sexo que se le asignó al nacer a una persona, en atención a sus características, no corresponde con el sexo que esa persona siente y sabe que es.',
+            'La transexualidad, por lo tanto, solo puede ser determinada por un médico especialista.',
+            'La transexualidad se refiere únicamente a la identidad de género de una persona.',
+            'La condición de transexualidad es una enfermedad mental reconocida por la OMS. ',
+        ],
+        'answer': 'La condición de transexualidad es una enfermedad mental reconocida por la OMS. ',
+    },
+    {
+        'question': '¿Qué se debe garantizar en el ámbito de la seguridad y justicia para las personas trans?',
+        'options': [
+            'La creación de unidades especializadas en delitos de odio contra personas trans.',
+            'La formación del personal de seguridad y justicia en diversidad sexual y la normativa protectora de las personas trans.',
+            'La modificación de los códigos de comunicación para incluir la no discriminación por identidad sexual. ',
+            'La promoción de políticas de inclusión laboral para personas trans en el ámbito de la seguridad y justicia.',
+        ],
+        'answer': 'La modificación de los códigos de comunicación para incluir la no discriminación por identidad sexual. ',
+    },
+           
+         // Preguntas de TEMAS NUEVOS 10
+    ],
+    
+},
+ {
+        name: 'TEMA 26',
+        questions: [
+		
+		{
+        'question': '¿Cuál es un deber general de todas las personas residentes en la Comunidad Autónoma en materia de protección civil?',
+        'options': [
+            'Adoptar y aplicar los planes y medidas de autoprotección legalmente requeridos. ',
+            'Participar activamente en la planificación de estrategias de protección civil a nivel municipal.',
+            'Liderar campañas de concienciación pública sobre los riesgos en la comunidad.',
+            'Financiar proyectos de investigación y desarrollo de nuevas tecnologías para la protección civil.',
+        ],
+        'answer': 'Adoptar y aplicar los planes y medidas de autoprotección legalmente requeridos. ',
+    },
+    {
+        'question': '¿Qué se promueve con personas, entidades o empresas en materia de protección civil?',
+        'options': [
+            'Solo existen personas que no pueden ser necesarias.',
+            'Conjuntan parte de los procesos de gestión técnica y sus mejores servicios en emergencias. ',
+            'La responsabilidad física del uso humano es una la diferencia de recursos corporales.',
+            'Campañas de sensibilización sobre los riesgos naturales y tecnológicos.',
+        ],
+        'answer': 'Conjuntan parte de los procesos de gestión técnica y sus mejores servicios en emergencias. ',
+    },
+    {
+        'question': '¿Qué tipo de medidas puede adoptar la autoridad competente en materia de protección civil según el texto?',
+        'options': [
+            'Introducir por qué, suicidio, la colaboración de los ciudadanos y empresas.',
+            'Solo puede emitir sujetos informativos a través de los medios de comunicación.',
+            'Confirmar cómo se presenta en las domicilios o en lugares seguros, evacuación o alejamiento de las personas donde logren de peligro, restricción de acceso a zonas de peligro o a zonas de operación, limitación o conformamiento de los que se refiere políticos y privados o el consumo de bienes, prevención o prohibición de actividades al lugar de determinados y obligación de adoptar precauciones. ',
+            'Solo puede recomendar medidas, pero no tiene la autoridad para obligar a su cumplimiento.',
+        ],
+        'answer': 'Confirmar cómo se presenta en las domicilios o en lugares seguros, evacuación o alejamiento de las personas donde logren de peligro, restricción de acceso a zonas de peligro o a zonas de operación, limitación o conformamiento de los que se refiere políticos y privados o el consumo de bienes, prevención o prohibición de actividades al lugar de determinados y obligación de adoptar precauciones. ',
+    },
+    {
+        'question': '¿Qué derecho específico tienen los ciudadanos en relación con las autoridades y servicios de protección civil, según lo establecido en el texto?',
+        'options': [
+            'Requerir la presencia de un representante legal en todas las comunicaciones con protección civil.',
+            'Explicar información económica y/o participar en ambientes de emergencia.',
+            'Formular mejor, preliminar y representar un relación con riesgos y prevención. ',
+            'Obtener acceso inmediato a información clasificada sobre planes de emergencia.',
+        ],
+        'answer': 'Formular mejor, preliminar y representar un relación con riesgos y prevención. ',
+    },
+    {
+        'question': 'En caso de una catástrofe o situación de grave riesgo colectivo, ¿a qué están obligadas las personas, según lo estipulado en el texto?',
+        'options': [
+            'Realizar las prestaciones personales que exijan las autoridades competentes para la protección de personas y bienes. ',
+            'Proporcionar la organización temporal y firmando a los afectados hasta que se restablezca la normalidad.',
+            'Organizar y dirigir las equipas de defensa y asistencia en la zona afectada.',
+            'Evaluar los daños materiales y determinar las compensaciones económicas correspondientes.',
+        ],
+        'answer': 'Realizar las prestaciones personales que exijan las autoridades competentes para la protección de personas y bienes. ',
+    },
+    {
+        'question': '¿Quiénes son considerados sujetos especialmente obligados a colaborar según el texto?',
+        'options': [
+            'Únicamente los servicios de emergencia como bomberos y policía.',
+            'Las entidades titulares de derechos sobre bienes públicos que generan servicios públicos o de interés general, y singularmente aquellas cuya actividad está relacionada con servicios sanitarios o que gestionen servicios y suministros básicos. ',
+            'Solo los ciudadanos que tengan formación en primeros auxilios.',
+            'Exclusivamente las empresas privadas con más de 500 empleados.',
+        ],
+        'answer': 'Las entidades titulares de derechos sobre bienes públicos que generan servicios públicos o de interés general, y singularmente aquellas cuya actividad está relacionada con servicios sanitarios o que gestionen servicios y suministros básicos. ',
+    },
+    {
+        'question': '¿Quiénes están representados en la composición de la Comisión de Protección Civil de Euskadi?',
+        'options': [
+            'Representantes de los partidos políticos con representación parlamentaria, las organizaciones sindicales más representativas y la asociación de los organismos y usuarios.',
+            'Instituciones comunes de la Comunidad Autónoma, la Administración del Estado, los territorios históricos y la Administración municipal. ',
+            'Miembros de las Fuerzas y Cuerpos de Seguridad del Estado, los servicios de prevención y extinción de incendios y las organizaciones no gubernamentales.',
+            'Expertos en materia de protección civil designados por el Gobierno Vasco, los colegios profesionales y las universidades.',
+        ],
+        'answer': 'Instituciones comunes de la Comunidad Autónoma, la Administración del Estado, los territorios históricos y la Administración municipal. ',
+    },
+    {
+        'question': '¿Quién asume la dirección y coordinación de los servicios de socorro y asistencia en caso de emergencia dentro de un municipio? ¿A quién debe informar?',
+        'options': [
+            'El concejal de seguridad ciudadana, como responsable directo de la policía municipal, coordina los servicios de socorro y asistencia en emergencias dentro de su término municipal, informando a la Subdelegación del Gobierno a través de la Jefatura Provincial de Tráfico.',
+            'El alcalde, como máxima autoridad municipal de protección civil, asume la dirección y coordinación de los servicios de socorro y asistencia en emergencias dentro de su término municipal, informando al Gobierno Vasco a través del Centro de Coordinación de Emergencias. ',
+            'El secretario general del ayuntamiento, como fedatario público municipal, supervisa los servicios de socorro y asistencia en emergencias dentro de su término municipal, informando al Tribunal Superior de Justicia a través de la Fiscalía Provincial.',
+            'El jefe de la policía local, como mando operativo de la policía municipal, dirige los servicios de socorro y asistencia en emergencias dentro de su término municipal, informando a la Delegación del Gobierno a través del Servicio de Protección Civil.',
+        ],
+        'answer': 'El alcalde, como máxima autoridad municipal de protección civil, asume la dirección y coordinación de los servicios de socorro y asistencia en emergencias dentro de su término municipal, informando al Gobierno Vasco a través del Centro de Coordinación de Emergencias. ',
+    },
+    {
+        'question': '¿Cuáles son las responsabilidades principales de los municipios en el ámbito de la protección civil, según lo establecido en la ley?',
+        'options': [
+            'Promover la creación de una estructura municipal de protección civil, elaborar el plan municipal, recoger y transmitir datos relevantes, elaborar el catálogo de recursos movilizables, ejecutar programas de previsión y prevención, promover el voluntariado. ',
+            'Elaborar el plan municipal de protección civil solo si cuentan con recursos suficientes, recoger y transmitir datos irrelevantes, y ejecutar programas de previsión y prevención sin armonía con otras administraciones.',
+            'Recoger datos irrelevantes, en la protección civil, elaborar programas de previsión y prevención sin armonía con otras administraciones, y delegar la creación de organizaciones de voluntariado a entidades privadas.',
+            'Designar directamente los servicios de emergencia, coordinación con otras administraciones, elaborar el plan municipal de protección civil solo si es requerido por el Gobierno Vasco, y promover campañas de concienciación únicamente durante situaciones de crisis.',
+        ],
+        'answer': 'Promover la creación de una estructura municipal de protección civil, elaborar el plan municipal, recoger y transmitir datos relevantes, elaborar el catálogo de recursos movilizables, ejecutar programas de previsión y prevención, promover el voluntariado. ',
+    },
+    {
+        'question': 'En situaciones de alerta o emergencia, ¿cuál es la obligación de los medios de comunicación social de titularidad pública o privada?',
+        'options': [
+            'Solo están obligados a colaborar si reciben una compensación económica por ello.',
+            'Deben cobrar una tarifa especial por el desarrollo de avisos de emergencia.',
+            'Solo informar sobre la situación, sin necesidad de seguir instrucciones de las autoridades.',
+            'Colaborar con las autoridades de protección civil y transmitir o publicar los avisos e instrucciones que las autoridades les faciliten, de manera prioritaria, inmediata y gratuita. ',
+        ],
+        'answer': 'Colaborar con las autoridades de protección civil y transmitir o publicar los avisos e instrucciones que las autoridades les faciliten, de manera prioritaria, inmediata y gratuita. ',
+    },
+    {
+        'question': '¿Qué tipo de información puede solicitar la Comisión de Protección Civil de Euskadi para el ejercicio de sus funciones?',
+        'options': [
+            'Autorizar la expropiación de bienes inmuebles necesarios para la ejecución de planes de protección civil.',
+            'Requerir la intervención de las Fuerzas y Cuerpos de Seguridad del Estado en situaciones de emergencia.',
+            'Solicitar información a cualquier entidad o persona física o jurídica, y en particular de organizaciones del voluntariado de protección civil. ',
+            'Imponer sanciones económicas a las entidades que incumplan la normativa en materia de protección civil.',
+        ],
+        'answer': 'Solicitar información a cualquier entidad o persona física o jurídica, y en particular de organizaciones del voluntariado de protección civil. ',
+    },
+    {
+        'question': '¿Cuáles son los principales órganos de participación y coordinación del sistema de seguridad pública según el texto?',
+        'options': [
+            'El Consejo de Seguridad Pública de Euskadi y los consejos locales de participación en la seguridad. ',
+            'Las diputaciones forales y los ayuntamientos de capitales de provincia.',
+            'El Tribunal Superior de Justicia del País Vasco y la Audiencia Nacional.',
+            'Los cabildos insulares y las juntas vecinales.',
+        ],
+        'answer': 'El Consejo de Seguridad Pública de Euskadi y los consejos locales de participación en la seguridad. ',
+    },
+    {
+        'question': '¿Qué normativa rige a la Academia Vasca de Policía y Emergencias en el desarrollo de su actividad?',
+        'options': [
+            'Exclusivamente por informar los ejércitos de la Ertzaintza.',
+            'Solo por las atribuciones del departamento de seguridad del Gobierno Vasco.',
+            'La Ley de Policía del País Vasco, la Ley de Coordinación de Emergencias, la presente ley y su reglamento de organización y funcionamiento. ',
+            'Únicamente por el Código Penal y la Ley de Enjuiciamiento Criminal.',
+        ],
+        'answer': 'La Ley de Policía del País Vasco, la Ley de Coordinación de Emergencias, la presente ley y su reglamento de organización y funcionamiento. ',
+    },
+    {
+        'question': '¿Cuál es el propósito del sistema vasco de atención de emergencias y protección civil, según el texto?',
+        'options': [
+            'Minimizar los daños a personas, bienes y el patrimonio colectivo por peligros o amenazas naturales, tecnológicos o antrópicos.',
+            'Justificar los daños a personas, bienes y el patrimonio colectivo por peligros o amenazas de origen desconocido.',
+            'Aumentar los daños a personas, bienes y el patrimonio colectivo por peligros o amenazas de origen natural.',
+            'Entender los correspondientes daños a personas, bienes y el patrimonio colectivo por peligros o amenazas naturales, tecnológicos o antrópicos. ',
+        ],
+        'answer': 'Entender los correspondientes daños a personas, bienes y el patrimonio colectivo por peligros o amenazas naturales, tecnológicos o antrópicos. ',
+    },
+    {
+        'question': '¿A qué régimen responderá este siglo el cuerpo de la Policía del País Vasco?',
+        'options': [
+            'Un régimen completamente específico, sin puntos en común.',
+            'Un régimen estatutario como único conforme de más de 50.000 habitantes.',
+            'Un régimen estatutario que depende exclusivamente de la voluntad del Gobierno Vasco.',
+            'Un régimen estatutario y homogéneo, con algunas particularidades. ',
+        ],
+        'answer': 'Un régimen estatutario y homogéneo, con algunas particularidades. ',
+    },
+    {
+        'question': '¿A qué departamento del Gobierno Vasco está adscrita la Academia Vasca de Policía y Emergencias?',
+        'options': [
+            'Al Director General de la Ertzaintza.',
+            'Al Departamento del Gobierno Vasco competente en materia de seguridad pública. ',
+            'Al Departamento del Interior del Gobierno de España.',
+            'Dice: Pensar al tratamiento del Gobierno Vasco.',
+        ],
+        'answer': 'Al Departamento del Gobierno Vasco competente en materia de seguridad pública. ',
+    },
+    {
+        'question': '¿Qué mecanismos impulsa la ley para la coordinación de las policías locales?',
+        'options': [
+            'La centralización total de la gestión policial, sin mecanismos de coordinación.',
+            'La supresión de conocimiento de Coordinación y la integración prevista en la Ertzaintza.',
+            'La Comisión de Coordinación de Policías Locales, el registro de policías locales y los medios de asociación profesional. ',
+            'La financiación del excluente de proyectos de seguridad ciudadana a través de fondos europeos.',
+        ],
+        'answer': 'La Comisión de Coordinación de Policías Locales, el registro de policías locales y los medios de asociación profesional. ',
+    },
+    {
+        'question': '¿Cuál es el objeto principal de la Academia Vasca de Policía y Emergencias, según el texto?',
+        'options': [
+            'Ejecutar la política formativa, de selección, investigación e innovación del Gobierno en seguridad pública. ',
+            'Gestionar el presupuesto de seguridad policial del Gobierno Vasco.',
+            'Supervisar la gestión de los cuerpos de policía locales y autonómicos en el País Vasco.',
+            'Coordinar los servicios de emergencia a nivel nacional e internacional.',
+        ],
+        'answer': 'Ejecutar la política formativa, de selección, investigación e innovación del Gobierno en seguridad pública. ',
+    },
+    {
+        'question': '¿Qué cuerpos policiales constituyen la Policía del País Vasco, según la regulación?',
+        'options': [
+            'La Ertzaintza y los cuerpos de Policía local, dependientes de los municipios. ',
+            'La Guardia Civil y el Cuerpo Nacional de Policía, en coordinación con la Ertzaintza.',
+            'Los cuerpos de Policía local exclusivamente, sin participación de la Ertzaintza.',
+            'Únicamente la Ertzaintza, que actúa de forma autónoma y en coordinación con otros cuerpos.',
+        ],
+        'answer': 'La Ertzaintza y los cuerpos de Policía local, dependientes de los municipios. ',
+    },
+    {
+        'question': '¿Qué tipo de prescripciones quedan fuera del ámbito de aplicación de la Ley de Seguridad Ciudadana, según el Artículo 2.7?',
+        'options': [
+            'Las prescripciones que tienen por objeto velar por el buen orden de los espectáculos y la protección de las personas y bienes a través de una acción administrativa ordinaria. ',
+            'Las prescripciones que tienen por objeto velar por el buen orden de los espectáculos y la protección de los animales.',
+            'Las prescripciones que tienen por objeto velar por el buen orden de los espectáculos y la protección de las personas y bienes a través de una acción administrativa que implique el uso de la fuerza.',
+            'Las prescripciones que tienen por objeto velar por el buen orden de los espectáculos y la protección de las personas y bienes a través de una acción administrativa extraordinaria.',
+        ],
+        'answer': 'Las prescripciones que tienen por objeto velar por el buen orden de los espectáculos y la protección de las personas y bienes a través de una acción administrativa ordinaria. ',
+    },
+    {
+        'question': 'Según el Artículo 1.1, ¿cómo se define la seguridad ciudadana en relación con los derechos fundamentales y las libertades públicas?',
+        'options': [
+            'Un artículo correspondiente a ciertos ciudadanos en función de su estatus social.',
+            'Una herramienta para limitar el ejercicio de los derechos en nombre del orden público.',
+            'Un concepto del Estado que puede ser revocada en situaciones excepcionales.',
+            'Un objetivo indispensable para el pleno ejercicio de los derechos fundamentales y las libertades públicas. ',
+        ],
+        'answer': 'Un objetivo indispensable para el pleno ejercicio de los derechos fundamentales y las libertades públicas. ',
+    },
+    {
+        'question': '¿Cuál de los siguientes es uno de los fines de la Ley de Seguridad Ciudadana, según el Artículo 3?',
+        'options': [
+            'La restricción del libre ejercicio de los derechos fundamentales en situaciones de crisis.',
+            'La protección del libre ejercicio de los derechos fundamentales y las libertades públicas. ',
+            'La promoción del ejercicio exclusivo de los derechos individuales.',
+            'La limitación del ejercicio de las libertades públicas en favor del orden estatal.',
+        ],
+        'answer': 'La protección del libre ejercicio de los derechos fundamentales y las libertades públicas. ',
+    },
+    {
+        'question': 'Según el Artículo 31 sobre normas concurrentes, ¿qué ocurre cuando una misma conducta puede ser calificada como dos o más infracciones?',
+        'options': [
+            'Se impondrán todas las sanciones correspondientes a cada una de las infracciones concurrentes.',
+            'Se aplicará la sanción más común entre las infracciones concurrentes.',
+            'Se elegirá la sanción que el infractor considera más adecuado.',
+            'Se impondrá la sanción correspondiente a la infracción de mayor gravedad. ',
+        ],
+        'answer': 'Se impondrá la sanción correspondiente a la infracción de mayor gravedad. ',
+    },
+    {
+        'question': '¿A qué tipo de establecimientos o instalaciones se refiere específicamente el Artículo 26 en relación con la adopción de medidas de seguridad?',
+        'options': [
+            'Empresas financieras que gestionan grandes cantidades de efectivo.',
+            'Establecimientos e instalaciones obligados a adoptar medidas de seguridad. ',
+            'Organizaciones no gubernamentales que trabajan en la prevención del delito.',
+            'Empresas de seguridad privada que operan en polígonos industriales.',
+        ],
+        'answer': 'Establecimientos e instalaciones obligados a adoptar medidas de seguridad. ',
+    },
+    {
+        'question': '¿Qué criterios se deben tener en cuenta para la graduación de las sanciones según el Artículo 33?',
+        'options': [
+            'La naturaleza de la infracción, el daño causado, la intencionalidad, la reincidencia y la capacidad económica del infractor. ',
+            'Únicamente la reincidencia y la capacidad económica del infractor.',
+            'Solo la naturaleza de la infracción y el daño causado.',
+            'Exclusivamente la intencionalidad y la reincidencia.',
+        ],
+        'answer': 'La naturaleza de la infracción, el daño causado, la intencionalidad, la reincidencia y la capacidad económica del infractor. ',
+    },
+    {
+        'question': '¿Quiénes son considerados sujetos responsables según el Artículo 30 en el régimen sancionador?',
+        'options': [
+            'Solo las personas jurídicas que, a través de leurs empleados, cometan infracciones administrativas.',
+            'Exclusivamente los funcionarios públicos que en el ejercicio de sus funciones, permitan la comisión de infracciones.',
+            'Tanto las personas físicas como las jurídicas que incurran en acciones u omisiones tipificadas como infracciones. ',
+            'Únicamente las personas físicas que realicen directamente las acciones tipificadas como infracciones.',
+        ],
+        'answer': 'Tanto las personas físicas como las jurídicas que incurran en acciones u omisiones tipificadas como infracciones. ',
+    },
+    {
+        'question': '¿Cuándo se considera que caduca un procedimiento sancionador en el ámbito de la seguridad ciudadana, según lo estipulado en el texto?',
+        'options': [
+            'El procedimiento sancionador no caduca, mantiene su validez hasta la resolución final, independientemente del tiempo transcurrido o las causas de la demora.',
+            'El procedimiento sancionador caduca a los seis meses desde su inicio, sin excepciones ni posibilidad de interrupción, garantizando así la rapidez en la resolución de los casos.',
+            'El procedimiento sancionador caduca al año desde su inicio, excluyendo del cómputo las paralizaciones imputables al interesado o la suspensión por proceso penal con identidad de elementos. ',
+            'El procedimiento sancionador tiene una duración máxima de dos años, prorrogables automáticamente por un año más, sin importar las causas de la demora.',
+        ],
+        'answer': 'El procedimiento sancionador caduca al año desde su inicio, excluyendo del cómputo las paralizaciones imputables al interesado o la suspensión por proceso penal con identidad de elementos. ',
+    },
+    {
+        'question': '¿Cuáles son los plazos de prescripción de las infracciones según su clasificación (muy graves, graves, leves), según el Artículo 38?',
+        'options': [
+            'Cinco años para las muy graves, tres años para las graves y un año para las leves.',
+            'Dos años para las muy graves, un año para las graves y tres meses para las leves.',
+            'Tres años para las muy graves, dos años para las graves y seis meses para las leves. ',
+            'Diez años para las muy graves, cinco años para las graves y deux años para las leves.',
+        ],
+        'answer': 'Tres años para las muy graves, dos años para las graves y seis meses para las leves. ',
+    },
+    {
+        'question': '¿Qué consecuencias tiene la resolución que declara la caducidad de un procedimiento sancionador en relación con la posibilidad de iniciar un nuevo procedimiento?',
+        'options': [
+            'La declaración de caducidad de un procedimiento sancionador implica la anulación de todos los actos realizados, sin posibilidad de iniciar un nuevo procedimiento.',
+            'La declaración de caducidad de un procedimiento sancionador implica la finalización, pero no impide promover un nuevo procedimiento si no ha prescrito la infracción. ',
+            'La declaración de caducidad de un procedimiento sancionador conlleva la prescripción automática de la infracción, impidiendo cualquier acción administrativa posterior.',
+            'La declaración de caducidad de un procedimiento sancionador permite la reapertura del mismo en cualquier momento, sin importar si ha prescrito la infracción o no.',
+        ],
+        'answer': 'La declaración de caducidad de un procedimiento sancionador implica la finalización, pero no impide promover un nuevo procedimiento si no ha prescrito la infracción. ',
+    },
+          
+           
+         // Preguntas de TEMAS NUEVOS 26
+    ],
+    
+},
+ {
+        name: 'TEMA 40-41',
+        questions: [
+          
+		  {
+        'question': 'Los acuerdos militares entre EEUU y España de 1953 supusieron:',
+        'options': [
+            'Perder la esperanza de lograr desplazar a Franco desde el exterior. ',
+            'Un fuerte proteccionismo económico.',
+            'La creación de Eusko Nahia.',
+            'La desaparición de la represión.',
+        ],
+        'answer': 'Perder la esperanza de lograr desplazar a Franco desde el exterior. ',
+    },
+    {
+        'question': 'El antecedente directo de ETA es:',
+        'options': [
+            'ATA.',
+            'AKIN. ',
+            'EGI.',
+            'Eusko Nahia.',
+        ],
+        'answer': 'AKIN. ',
+    },
+    {
+        'question': 'En la sociedad española se deseaba transitar del Franquismo al Estado Monárquico con el menor costo social y político posible. Por ello, se veía necesaria una reforma negociada y moderada.',
+        'options': [
+            'Verdadero. ',
+            'Falso.',
+            'Un desviado culturalmente aprobado.',
+        ],
+        'answer': 'Verdadero. ',
+    },
+    {
+        'question': 'El 6 de diciembre de 1978 queda convocado el referéndum sobre la Constitución. Ante esta consulta, ¿cuál fue la postura de la mayoría del nacionalismo vasco (PNV, EE...)?',
+        'options': [
+            'Sí.',
+            'No.',
+            'Abstención. ',
+            'Ninguna de las anteriores.',
+        ],
+        'answer': 'Abstención. ',
+    },
+    {
+        'question': 'Durante el régimen preautonómico, el Gobierno Vasco será el encargado de las:',
+        'options': [
+            'Funciones ejecutivas.',
+            'Funciones legislativas.',
+            'Funciones administrativas.',
+            'Ninguna de las anteriores es correcta. ',
+        ],
+        'answer': 'Ninguna de las anteriores es correcta. ',
+    },
+    {
+        'question': '¿En qué provincia domina la diversificación sectorial frente a la concentración sectorial?',
+        'options': [
+            'Bizkaia.',
+            'Gipuzkoa. ',
+            'En las dos.',
+        ],
+        'answer': 'Gipuzkoa. ',
+    },
+    {
+        'question': '¿En qué fecha se puede dar una terminada la Guerra Civil en Euskadi?',
+        'options': [
+            'Primavera de 1939.',
+            'Otoño de 1938.',
+            'Verano de 1937. ',
+        ],
+        'answer': 'Verano de 1937. ',
+    },
+    {
+        'question': 'La Compromiso Autonómico de Mayo de 1977 se suscribe en el fin de:',
+        'options': [
+            'Formar un frente común para las elecciones de Junio de 1977.',
+            'Redactar y aprobar una Preautonomía para el País Vasco.',
+            'Redacta y aprobar un Estatuto de Autonomía para el País Vasco. ',
+        ],
+        'answer': 'Redacta y aprobar un Estatuto de Autonomía para el País Vasco. ',
+    },
+    {
+        'question': 'La ideología carlista se basaba en:',
+        'options': [
+            'El Librecambismo.',
+            'La concepción jerárquica de la sociedad. ',
+            'El Integrismo religioso.',
+        ],
+        'answer': 'La concepción jerárquica de la sociedad. ',
+    },
+    {
+        'question': 'La primera gran Huelga General es la de:',
+        'options': [
+            '1.889.',
+            '1890. ',
+            '1891.',
+        ],
+        'answer': '1890. ',
+    },
+    {
+        'question': 'EI modelo industrial vizcaíno, basado en las grandes empresas, conllevará una superproducción que superará la demanda del mercado. Esto trae consigo:',
+        'options': [
+            'La petición e implantación de medios proteccionistas. ',
+            'La infrautilización de la capacidad productiva de las empresas.',
+            'La búsqueda de nuevos mercados.',
+        ],
+        'answer': 'La petición e implantación de medios proteccionistas. ',
+    },
+    {
+        'question': 'Las Cortes creadas tras las elecciones de Junio de 1977 tiene como objetivo prioritario:',
+        'options': [
+            'La elaboración aprobación de la Constitución. ',
+            'La discusión aprobación del Estatuto de Autonomía Vasco.',
+            'La creación de un Estado de las Autonomías.',
+        ],
+        'answer': 'La elaboración aprobación de la Constitución. ',
+    },
+    {
+        'question': 'Las dos secciones en las que divide la Ertamiza de 1936 son:',
+        'options': [
+            'Artillería y Motorizada.',
+            'Infantería y Motorizada. ',
+            'Infantería y Artillería.',
+        ],
+        'answer': 'Infantería y Motorizada. ',
+    },
+    {
+        'question': '¿Cuál de las siguientes cuestiones NO es característica del Nacionalismo de Sabino Arana?',
+        'options': [
+            'Romanticismo agrario.',
+            'Gobierno y Leyes Tradicionales.',
+            'Irreligiosidad. ',
+        ],
+        'answer': 'Irreligiosidad. ',
+    },
+    {
+        'question': 'Frente al Referéndum del Estatuto de Autonomía ¿quiénes propagaban el NO?',
+        'options': [
+            'Los nacionalistas.',
+            'Los rupturistas.',
+            'La derecha. ',
+        ],
+        'answer': 'La derecha. ',
+    },
+    {
+        'question': '¿Cuál de las siguientes fechas enmarcan las Guerras Carlistas?',
+        'options': [
+            '1833-39 y 1872-76. ',
+            '1832-39 y 1873-76.',
+            '1844-39 y 1872-76.',
+        ],
+        'answer': '1833-39 y 1872-76. ',
+    },
+    {
+        'question': '¿Cuál de los siguientes motivos NO explica que el hicno vizcano sea más barato que el sueco?',
+        'options': [
+            'Que es no fosfórico. ',
+            'Que se encuentra cerca de vías de comunicación.',
+            'Que se encuentra en superficie.',
+        ],
+        'answer': 'Que es no fosfórico. ',
+    },
+    {
+        'question': '¿Quién estaba al a cargo de las Presidencia de la II República cuando el País Vasco logró el estatuto de Autonomía?',
+        'options': [
+            'Alcalá Zamora.',
+            'Manuel Azaña. ',
+            'Largo Caballero.',
+        ],
+        'answer': 'Manuel Azaña. ',
+    },
+    {
+        'question': '¿Su qué fecha se funda el Banco de Bilbao?',
+        'options': [
+            '1857. ',
+            '1862.',
+            '1890.',
+            '1900.',
+        ],
+        'answer': '1857. ',
+    },
+    {
+        'question': '¿Qué Provincia fue la que destacó en el desarrollo industrial vasco?',
+        'options': [
+            'Gipuzkoa.',
+            'Navarra.',
+            'Bizkaia. ',
+            'Álava.',
+        ],
+        'answer': 'Bizkaia. ',
+    },
+    {
+        'question': '¿cómo se llama la primera factoría territorial vaca?',
+        'options': [
+            'Santa Ana de Bolueta. ',
+            'Santa Mª del Carmen.',
+            'San Francisco de Mudela',
+            'Altos Hornos de Bilbao.',
+        ],
+        'answer': 'Santa Ana de Bolueta. ',
+    },
+    {
+        'question': '¿En qué se basó y espectacular desarrolla vizcaíno del siglo XIX y primeros decenios del siglo XX?',
+        'options': [
+            'Monocultivo del hierro. ',
+            'Acero.',
+            'Papeleras.',
+            'Mezburgia.',
+        ],
+        'answer': 'Monocultivo del hierro. ',
+    },
+    {
+        'question': 'La explotación minera capitalista estuvo en manos:',
+        'options': [
+            'Españolas; madrileñas en concreto.',
+            'Vizcaínas; de los jauntxos.',
+            'Su las manos de los ferrones.',
+            'De los extranjeros (ingleses, tranceses y belgas) . ',
+        ],
+        'answer': 'De los extranjeros (ingleses, tranceses y belgas) . ',
+    },
+    {
+        'question': 'El mineral vasco era:',
+        'options': [
+            'Más barato que el inglés. ',
+            'Más caro que el inglés.',
+            'Más costoso de extraer.',
+            'De muy mala calidad.',
+        ],
+        'answer': 'Más barato que el inglés. ',
+    },
+    {
+        'question': '¿A dónde se enviaba el mineral vizcaíno?',
+        'options': [
+            'Inglaterra. ',
+            'Suecia.',
+            'Bélgica.',
+            'Francia.',
+        ],
+        'answer': 'Inglaterra. ',
+    },
+    {
+        'question': '¿Cuál es la Divisa del PNV?',
+        'options': [
+            'Dios y leyes viejas. ',
+            'Ikurriña.',
+            'Independencia.',
+            'Catolicismo.',
+        ],
+        'answer': 'Dios y leyes viejas. ',
+    },
+    {
+        'question': '¿Cómo se llamaba la revista fundada por Sabino Arana?',
+        'options': [
+            'Bizkaitarra. ',
+            'JEL.',
+            'Asociación nacionalista.',
+            'Dios, patria y rey.',
+        ],
+        'answer': 'Bizkaitarra. ',
+    },
+    {
+        'question': '¿En qué fecha se funda el PNV?',
+        'options': [
+            '1875.',
+            '1895. ',
+            '1900.',
+            '1876.',
+        ],
+        'answer': '1895. ',
+    },
+    {
+        'question': '¿Cómo se llamaba el órgano de difusión de la doctrina socialista?',
+        'options': [
+            'Lucha obrera vasca.',
+            'Lucha de clases. ',
+            'El independiente.',
+            'El socialista.',
+        ],
+        'answer': 'Lucha de clases. ',
+    },
+    {
+        'question': '¿Cómo se llamaba el pretendido al trono carlista?',
+        'options': [
+            'Carlos Hugo de Borbón.',
+            'Carlos María Isidoro. ',
+            'Froilán de Borbón.',
+            'Íñigo de Navarra.',
+        ],
+        'answer': 'Carlos María Isidoro. ',
+    },
+    {
+        'question': '¿Dónde fue herido de muerte Zumala arregui?',
+        'options': [
+            'En el sitio de Bilbao. ',
+            'En Montejurra.',
+            'En Mendigorria',
+            'En Estella.',
+        ],
+        'answer': 'En el sitio de Bilbao. ',
+    },
+    {
+        'question': '¿Qué puso fin a la Primera Guerra Carlista?',
+        'options': [
+            'Abrazo de Bergara ',
+            'Abrazo de Mina.',
+            'Abrazo de Estella.',
+            'General Urgoz.',
+        ],
+        'answer': 'Abrazo de Bergara ',
+    },
+    {
+        'question': '¿Quién liberó Bilbo del Segundo sitio en 1874?',
+        'options': [
+            'General Mina.',
+            'General Concha. ',
+            'General Zumalacarregui.',
+            'General Urgoz.',
+        ],
+        'answer': 'General Concha. ',
+    },
+    {
+        'question': '¿En qué fecha se firma el concierto económico?',
+        'options': [
+            '1878. ',
+            '1786.',
+            '1870.',
+            '1798.',
+        ],
+        'answer': '1878. ',
+    },
+    {
+        'question': 'En 1902 se funda una industria que será emblemática en el País Vasco:',
+        'options': [
+            'Altos Hemos de Vizcaya. ',
+            'Orconera Iron Ore.',
+            'Luchana Mining.',
+            'Nuestra Señora del Carmen.',
+        ],
+        'answer': 'Altos Hemos de Vizcaya. ',
+    },
+    {
+        'question': '¿Cuándo desaparecen los fueros?',
+        'options': [
+            '1786.',
+            '1686.',
+            '1876. ',
+        ],
+        'answer': '1876. ',
+    },
+    {
+        'question': '¿Cuándo tenimó la Guerra Civil en Euskadi?',
+        'options': [
+            '1939.',
+            'Verano de 1939.',
+            'Verano de 1937. ',
+        ],
+        'answer': 'Verano de 1937. ',
+    },
+           
+         // Preguntas de TEMAS NUEVOS 33-34
+    ],
+    
+},
+ {
+        name: 'TEMA 47',
+        questions: [
+          
+		  {
+        'question': '¿Cuál es el requisito de autorización previa para las reuniones según lo establecido en la Ley Orgánica?',
+        'options': [
+            'Sólo las manifestaciones de carácter público requieren autorización previa.',
+            'Ninguna reunión estará sometida al régimen de previa autorización. ',
+            'Toda reunión requiere autorización previa si se realiza en la vía pública.',
+            'Las reuniones de más de 100 personas requieren autorización previa del ayuntamiento.',
+        ],
+        'answer': 'Ninguna reunión estará sometida al régimen de previa autorización. ',
+    },
+    {
+        'question': '¿En qué casos tiene la autoridad gubernativa la potestad de suspender o disolver reuniones y manifestaciones, según lo indicado en el texto?',
+        'options': [
+            'La autoridad gubernativa puede suspender o disolver una reunión únicamente si los organizadores no han solicitado los permisos correspondientes.',
+            'La autoridad gubernativa puede suspender o disolver una reunión si se producen alteraciones del orden público que pongan en peligro a personas o bienes. ',
+            'La autoridad gubernativa puede suspender o disolver una reunión solo si la mayoría de los asistentes lo solicita formalmente.',
+            'La autoridad gubernativa no tiene la potestad de suspender o disolver una reunión, ya que esto vulneraría el derecho de reunión.',
+        ],
+        'answer': 'La autoridad gubernativa puede suspender o disolver una reunión si se producen alteraciones del orden público que pongan en peligro a personas o bienes. ',
+    },
+    {
+        'question': '¿Quiénes son responsables del buen orden de las reuniones y manifestaciones, según la Ley Orgánica?',
+        'options': [
+            'Los participantes individuales son los únicos responsables de su propio comportamiento durante la reunión.',
+            'La autoridad gubernativa es la única responsable del orden, independientemente de las acciones de los organizadores.',
+            'Los organizadores son responsables del buen orden y deben adoptar medidas para el adecuado desarrollo de las reuniones. ',
+            'La responsabilidad del orden recae únicamente en las fuerzas de seguridad presentes en la reunión.',
+        ],
+        'answer': 'Los organizadores son responsables del buen orden y deben adoptar medidas para el adecuado desarrollo de las reuniones. ',
+    },
+    {
+        'question': '¿Qué tipo de recurso pueden interponer los organizadores y promotores si no están de acuerdo con la prohibición o modificación de una reunión, y en qué plazo?',
+        'options': [
+            'Recurso de súplica ante el Consejo de Ministros en un plazo de quince días.',
+            'Recurso contencioso-administrativo ante la Audiencia competente en un plazo de cuarenta y ocho horas. ',
+            'Recurso de alzada ante el Ministerio del Interior en un plazo de setenta y dos horas.',
+            'Recurso de amparo ante el Tribunal Constitucional en un plazo de veinticuatro horas.',
+        ],
+        'answer': 'Recurso contencioso-administrativo ante la Audiencia competente en un plazo de cuarenta y ocho horas. ',
+    },
+    {
+        'question': '¿Cuál es el propósito principal de la Ley Orgánica en relación con el derecho de reunión?',
+        'options': [
+            'Delegar en las comunidades autónomas la regulación del derecho de reunión.',
+            'Regular el núcleo esencial del derecho de reunión, ajustándolo a los preceptos de la Constitución. ',
+            'Establecer un sistema de autorizaciones previas para garantizar la seguridad ciudadana.',
+            'Prohibir cualquier tipo de reunión que no sea comunicada previamente a la autoridad competente.',
+        ],
+        'answer': 'Regular el núcleo esencial del derecho de reunión, ajustándolo a los preceptos de la Constitución. ',
+    },
+    {
+        'question': '¿Cuáles son las características principales del informe al que se refiere el artículo diez?',
+        'options': [
+            'El informe no requerirá motivación alguna y tendrá carácter orientativo para la autoridad gubernativa.',
+            'El informe tendrá carácter orientativo y se basará en criterios antiguos definidos por la autoridad gubernativa.',
+            'El informe se basará en causas objetivas de índole técnico y no tendrá carácter vinculante, debiendo ser motivado. ',
+            'El informe se limitará a evaluar la identidad política de la reunión o manifestación y será vinculante.',
+        ],
+        'answer': 'El informe se basará en causas objetivas de índole técnico y no tendrá carácter vinculante, debiendo ser motivado. ',
+    },
+    {
+        'question': '¿Sobre quién recae la responsabilidad subsidiaria por los daños que los participantes causen a terceros en una manifestación?',
+        'options': [
+            'La responsabilidad por los daños causados por los participantes recae exclusivamente sobre la autoridad gubernativa, sin responsabilidad a los organizadores.',
+            'Las personas organizadoras nunca responden de los daños causados por los participantes, la responsabilidad siempre recae directamente sobre los participantes.',
+            'Las personas organizadoras responden subsidiariamente de los daños causados por los participantes, a menos que hayan empleado todos los medios posibles para evitarlos. ',
+            'Las personas organizadoras siempre responden de los daños causados por los participantes, incluso si han empleado todos los medios razonables para evitarlos.',
+        ],
+        'answer': 'Las personas organizadoras responden subsidiariamente de los daños causados por los participantes, a menos que hayan empleado todos los medios posibles para evitarlos. ',
+    },
+    {
+        'question': '¿Con cuánta antelación debe comunicarse a la autoridad gubernativa la celebración de reuniones en lugares de tránsito público y manifestaciones, según lo indicado por medio?',
+        'options': [
+            'La comunicación a la autoridad gubernativa de la celebración de una manifestación debe realizarse con una antelación mínima de treinta días naturales, sin excepciones.',
+            'La comunicación a la autoridad gubernativa para la celebración de una manifestación es necesaria si la manifestación se realizará de forma pacífica.',
+            'La comunicación a la autoridad gubernativa para la celebración de una manifestación debe realizarse con una antelación mínima de diez días naturales y máxima de treinta, salvo casos de urgencia justificada. ',
+            'La comunicación a la autoridad gubernativa para la celebración de una manifestación puede realizarse en cualquier momento antes del evento, siempre y cuando se informe con suficiente antelación.',
+        ],
+        'answer': 'La comunicación a la autoridad gubernativa para la celebración de una manifestación debe realizarse con una antelación mínima de diez días naturales y máxima de treinta, salvo casos de urgencia justificada. ',
+    },
+    {
+        'question': '¿Qué información debe constar en el escrito de comunicación a la autoridad gubernativa para la celebración de reuniones en lugares de tránsito público y manifestaciones, según lo especificado en el texto?',
+        'options': [
+            'El escrito de comunicación a la autoridad gubernativa debe incluir el nombre, domicilio del organizador, lugar, fecha, hora, duración prevista, objeto, itinerario proyectado y medidas de seguridad. ',
+            'El escrito de comunicación a la autoridad gubernativa debe incluir una copia del permiso municipal y un seguro de responsabilidad civil que cubra posibles daños.',
+            'El escrito de comunicación a la autoridad gubernativa debe incluir el número de participantes estimados, las pancartas y lemas a utilizar, y una declaración jurada de no violencia.',
+            'El escrito de comunicación a la autoridad gubernativa debe incluir solo el lugar, fecha y hora de la reunión, así como una breve descripción del tema a tratar.',
+        ],
+        'answer': 'El escrito de comunicación a la autoridad gubernativa debe incluir el nombre, domicilio del organizador, lugar, fecha, hora, duración prevista, objeto, itinerario proyectado y medidas de seguridad. ',
+    },
+    {
+        'question': '¿En qué casos puede la autoridad gubernativa suspender o disolver una reunión o manifestación?',
+        'options': [
+            'La autoridad gubernativa puede suspender o disolver reuniones únicamente si se producen daños materiales graves a la propiedad pública.',
+            'La autoridad gubernativa suspenderá o disolverá reuniones si se consideran ilícitas, alteran el orden público, se usan uniformes paramilitares, o son organizadas por miembros de las Fuerzas Armadas o Guardia Civil infringiendo limitaciones. ',
+            'La autoridad gubernativa no tiene la facultad de suspender o disolver reuniones, ya que esto es competencia exclusiva del poder judicial.',
+            'La autoridad gubernativa solo puede suspender o disolver reuniones si se consideran ilícitas según las leyes administrativas.',
+        ],
+        'answer': 'La autoridad gubernativa suspenderá o disolverá reuniones si se consideran ilícitas, alteran el orden público, se usan uniformes paramilitares, o son organizadas por miembros de las Fuerzas Armadas o Guardia Civil infringiendo limitaciones. ',
+    },
+    {
+        'question': '¿Con cuánta antelación debe comunicarse la celebración de reuniones en lugares de tránsito público y manifestaciones?',
+        'options': [
+            'La comunicación de reuniones en lugares de tránsito público debe realizarse con al menos quince días hábiles de antelación, sin excepciones por urgencia.',
+            'La comunicación de reuniones en lugares de tránsito público requiere un plazo de sesenta días naturales, sin posibilidad de reducirlo bajo ninguna circunstancia.',
+            'La comunicación de reuniones en lugares de tránsito público puede realizarse hasta 48 horas antes, independientemente de la existencia de casos urgentes.',
+            'La comunicación de reuniones en lugares de tránsito público debe realizarse entre diez y treinta días naturales antes, salvo urgencia justificada que permita un plazo de 24 horas. ',
+        ],
+        'answer': 'La comunicación de reuniones en lugares de tránsito público debe realizarse entre diez y treinta días naturales antes, salvo urgencia justificada que permita un plazo de 24 horas. ',
+    },
+    {
+        'question': '¿Qué información debe constar en el escrito de comunicación de una reunión o manifestación y cuál es el precepto de solicitar a la prescripción de dicho escrito?',
+        'options': [
+            'El escrito de comunicación solo requiere el nombre del organizador, la fecha y hora de la reunión, sin necesidad de especificar el itinerario o las medidas de seguridad.',
+            'El escrito de comunicación debe incluir datos del organizador, lugar, fecha, hora, duración, objeto, itinerario y medidas de seguridad, el Ayuntamiento debe ser notificado y responder en 24 horas sobre el recorrido. ',
+            'El escrito de comunicación debe ser entregado directamente al Ayuntamiento, quien se encarga de notificar a la autoridad gubernativa, emitiendo los datos del organizador.',
+            'El escrito de comunicación no es necesario si la reunión se realiza en un lugar privado y no afecta el tránsito público, independientemente del número de asistentes.',
+        ],
+        'answer': 'El escrito de comunicación debe incluir datos del organizador, lugar, fecha, hora, duración, objeto, itinerario y medidas de seguridad, el Ayuntamiento debe ser notificado y responder en 24 horas sobre el recorrido. ',
+    },
+           
+         // Preguntas de TEMAS NUEVOS 47
+    ],
+    
+},
+]
+// Variables
+let theme=null,index=0,correct=0,incorrect=0,startTime=Date.now(),answers=[],timerInterval;
+let mode = "study"; // Valor por defecto
+
+// DOM
+const themeTitle=document.getElementById("themeTitle");
+const questionText=document.getElementById("questionText");
+const optionsDiv=document.getElementById("options");
+const nextBtn=document.getElementById("nextBtn");
+const prevBtn=document.getElementById("prevBtn");
+const backBtn=document.getElementById("backBtn");
+const progress=document.getElementById("progress");
+const timer=document.getElementById("timer");
+const quizCard=document.getElementById("quizCard");
+const finalScreen=document.getElementById("finalScreen");
+const lastFailsScreen=document.getElementById("lastFailsScreen");
+const summary=document.getElementById("summary");
+const finalTime=document.getElementById("finalTime");
+const finalNote=document.getElementById("finalNote");
+const failedContainer=document.getElementById("failedContainer");
+const lastFailsContainer=document.getElementById("lastFailsContainer");
+const resumeDialog=document.getElementById("resumeDialog");
+const continueBtn=document.getElementById("continueBtn");
+const newBtn=document.getElementById("newBtn");
+const testSelection=document.getElementById("testSelection");
+const testButtonsDiv=document.getElementById("testButtons");
+const modeIndicator=document.getElementById("modeIndicator");
+const studyNoteContainer=document.getElementById("studyNoteContainer");
+const confirmDialog=document.getElementById("confirmDialog");
+const confirmExitBtn=document.getElementById("confirmExitBtn");
+const cancelExitBtn=document.getElementById("cancelExitBtn");
+
+// Nuevos elementos para los interruptores
+const studyExamToggle = document.getElementById("studyExamToggle");
+const studyExamLabel = document.getElementById("studyExamLabel");
+const darkModeToggle = document.getElementById("darkModeToggle");
+const darkModeLabel = document.getElementById("darkModeLabel");
+
+// Funciones para el toggle de modo estudio/examen
+function toggleStudyExamMode() {
+    if (mode === "study") {
+        setMode("exam");
+    } else {
+        setMode("study");
+    }
+}
+
+function setMode(newMode) {
+    mode = newMode;
+    
+    // Guardar el modo seleccionado en localStorage
+    localStorage.setItem("testMode", mode);
+    
+    // Actualizar interruptor estudio/examen visualmente
+    if (mode === "exam") {
+        studyExamToggle.className = "mode-toggle exam-mode";
+        studyExamLabel.textContent = "Modo Examen";
+        modeIndicator.textContent = "Modo: Examen - Solo verás las respuestas al final";
+        modeIndicator.className = "current-mode-indicator exam";
+    } else {
+        studyExamToggle.className = "mode-toggle study-mode";
+        studyExamLabel.textContent = "Modo Estudio";
+        modeIndicator.textContent = "Modo: Estudio - Verás las respuestas inmediatamente";
+        modeIndicator.className = "current-mode-indicator study";
+    }
+    
+    // Reconstruir los botones de test
+    buildTestButtons();
+}
+
+// Cargar el modo guardado del localStorage al iniciar
+function loadSavedMode() {
+    const savedMode = localStorage.getItem("testMode");
+    if (savedMode === "study" || savedMode === "exam") {
+        setMode(savedMode);
+    } else {
+        setMode("study"); // Valor por defecto si no hay nada guardado
+    }
+}
+
+// Funciones para el modo oscuro
+function initDarkMode() {
+    // Cargar preferencia de modo oscuro
+    const darkMode = localStorage.getItem("darkMode") === "true";
+    
+    if (darkMode) {
+        enableDarkMode();
+    } else {
+        disableDarkMode();
+    }
+    
+    // Configurar eventos para los interruptores
+    studyExamToggle.addEventListener("click", toggleStudyExamMode);
+    darkModeToggle.addEventListener("click", toggleDarkMode);
+    
+    // También permitir arrastre como el otro toggle
+    setupToggleDrag(studyExamToggle, toggleStudyExamMode);
+    setupToggleDrag(darkModeToggle, toggleDarkMode);
+}
+
+function toggleDarkMode() {
+    if (document.body.classList.contains("dark-mode")) {
+        disableDarkMode();
+    } else {
+        enableDarkMode();
+    }
+}
+
+function enableDarkMode() {
+    document.body.classList.add("dark-mode");
+    darkModeToggle.className = "mode-toggle dark-mode";
+    darkModeLabel.textContent = "Modo Oscuro";
+    localStorage.setItem("darkMode", "true");
+}
+
+function disableDarkMode() {
+    document.body.classList.remove("dark-mode");
+    darkModeToggle.className = "mode-toggle light-mode";
+    darkModeLabel.textContent = "Modo Claro";
+    localStorage.setItem("darkMode", "false");
+}
+
+// Función genérica para arrastre en toggles
+function setupToggleDrag(toggleElement, toggleFunction) {
+    let dragStart = 0;
+    let isDragging = false;
+    
+    toggleElement.addEventListener('touchstart', (e) => {
+        dragStart = e.touches[0].clientX;
+        isDragging = true;
+        e.preventDefault();
+    }, {passive: false});
+    
+    toggleElement.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+    }, {passive: false});
+    
+    toggleElement.addEventListener('touchend', (e) => {
+        if (!isDragging) return;
+        
+        const dragEnd = e.changedTouches[0].clientX;
+        const deltaX = dragEnd - dragStart;
+        
+        // Si se arrastra horizontalmente más de 20px, cambiar modo
+        if (Math.abs(deltaX) > 20) {
+            toggleFunction();
+        }
+        
+        isDragging = false;
+        e.preventDefault();
+    }, {passive: false});
+    
+    // Para mouse
+    toggleElement.addEventListener('mousedown', (e) => {
+        dragStart = e.clientX;
+        isDragging = true;
+        e.preventDefault();
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+    });
+    
+    document.addEventListener('mouseup', (e) => {
+        if (!isDragging) return;
+        
+        const dragEnd = e.clientX;
+        const deltaX = dragEnd - dragStart;
+        
+        // Si se arrastra horizontalmente más de 20px, cambiar modo
+        if (Math.abs(deltaX) > 20) {
+            toggleFunction();
+        }
+        
+        isDragging = false;
+        e.preventDefault();
+    });
+}
+
+// Funciones
+function getTestStateKey(){ return "testState_" + theme.name + "_" + mode; }
+
+function buildTestButtons(){
+    testButtonsDiv.innerHTML="";
+    const scores=JSON.parse(localStorage.getItem("moduleScores"))||{};
+    themes.forEach((t,i)=>{
+        const btn=document.createElement("button"); 
+        btn.textContent=t.name;
+
+        const saved = localStorage.getItem("testState_" + t.name + "_" + mode);
+        if(saved){ btn.textContent += " 💾"; }
+
+        btn.onclick=()=>startSelectedTest(i); 
+        testButtonsDiv.appendChild(btn);
+
+        const s=scores[t.name]?.[mode];
+        if(s?.ultimaNota!==undefined && s?.mejorNota!==undefined){
+            const scoreDiv=document.createElement("div");
+            const clase=s.ultimaNota<5?"low":s.ultimaNota<8?"mid":"high";
+            scoreDiv.className=`saved-module ${clase}`; 
+            scoreDiv.id=`score-${i}`;
+            scoreDiv.innerHTML=`<p>Última nota: ${s.ultimaNota}/10</p>
+                                  <p>Mejor nota: ${s.mejorNota}/10</p>`;
+            const answersList=s.answers||[];
+            const failed=answersList.filter(a=>!a.selected || a.selected!==a.correct);
+            if(failed.length>0){
+                const failBtn=document.createElement("button"); 
+                failBtn.textContent="Últimos fallos";
+                failBtn.style.marginTop="6px"; 
+                failBtn.className = "cuart";
+                failBtn.onclick=()=>showLastFails(t.name);
+                scoreDiv.appendChild(failBtn);
+            }
+            testButtonsDiv.appendChild(scoreDiv);
+        }
+    });
+}
+
+function startSelectedTest(i){ 
+    theme=themes[i]; 
+    testSelection.style.display="none"; 
+    initTest(false);
+}
+
+function goToIndex(){ 
+    window.location.href="../index.html";
+}
+
+function backToSelection(){ 
+    clearInterval(timerInterval); 
+    quizCard.style.display="none"; 
+    finalScreen.style.display="none"; 
+    lastFailsScreen.style.display="none"; 
+    buildTestButtons(); 
+    testSelection.style.display="block";
+}
+
+function showExitConfirmation() {
+    confirmDialog.style.display = "flex";
+}
+
+function initTest(loadSaved=false){
+    if(!theme){ 
+        buildTestButtons(); 
+        testSelection.style.display="block"; 
+        quizCard.style.display="none"; 
+        finalScreen.style.display="none"; 
+        return;
+    }
+    
+    const saved = localStorage.getItem(getTestStateKey());
+    if(!loadSaved && saved){ 
+        resumeDialog.style.display="flex"; 
+        quizCard.style.display="none"; 
+        finalScreen.style.display="none"; 
+        return;
+    }
+    
+    resumeDialog.style.display="none"; 
+    quizCard.style.display="block"; 
+    finalScreen.style.display="none"; 
+    lastFailsScreen.style.display="none";
+    
+    if(loadSaved && saved){ 
+        const state=JSON.parse(saved); 
+        index=state.index; 
+        correct=state.correct; 
+        incorrect=state.incorrect; 
+        startTime=state.startTime; 
+        answers=state.answers; 
+        // Recalcular correct e incorrect basado en las respuestas guardadas
+        recalculateCounts();
+    } else{ 
+        index=0; 
+        correct=0; 
+        incorrect=0; 
+        startTime=Date.now(); 
+        answers=[]; 
+        localStorage.removeItem(getTestStateKey()); 
+    }
+    
+    themeTitle.textContent=theme.name; 
+    clearInterval(timerInterval); 
+    timerInterval=setInterval(updateTimer,1000); 
+    loadQuestion();
+}
+
+function recalculateCounts() {
+    correct = 0;
+    incorrect = 0;
+    answers.forEach((answer, idx) => {
+        if (answer && answer.selected) {
+            if (answer.selected === answer.correct) {
+                correct++;
+            } else {
+                incorrect++;
+            }
+        }
+    });
+}
+
+function loadQuestion() {
+    const q = theme.questions[index];
+    questionText.textContent = q.question;
+    optionsDiv.innerHTML = "";
+    progress.textContent = `Pregunta ${index+1}/${theme.questions.length}`;
+
+  
+
+    q.options.forEach(opt => {
+        const label = document.createElement("label");
+        label.textContent = opt;
+
+        // Si ya habías respondido
+        if (answers[index] && answers[index].selected === opt) {
+            label.classList.add("selected");
+            
+            // En modo estudio, mostrar si la respuesta seleccionada es correcta o incorrecta
+            if (mode === "study") {
+                if (opt === q.answer) {
+                    label.classList.add("option-correct");
+                } else {
+                    label.classList.add("option-wrong");
+                    // Mostrar también la respuesta correcta
+                    document.querySelectorAll(".options label").forEach(l => {
+                        if (l.textContent === q.answer) l.classList.add("option-correct");
+                    });
+                }
+            }
+        }
+
+        label.addEventListener("click", () => {
+            // Quitar seleccionadas
+            document.querySelectorAll(".options label").forEach(l => {
+                l.classList.remove("selected", "option-correct", "option-wrong");
+            });
+            label.classList.add("selected");
+
+            // Guardar respuesta
+            const previousAnswer = answers[index];
+            const wasCorrect = previousAnswer && previousAnswer.selected === previousAnswer?.correct;
+            
+            // Si ya había una respuesta anterior, quitar su conteo
+            if (previousAnswer && previousAnswer.selected) {
+                if (wasCorrect) {
+                    correct--;
+                } else if (previousAnswer.selected) {
+                    incorrect--;
+                }
+            }
+
+            answers[index] = {
+                question: q.question,
+                options: q.options,
+                correct: q.answer,
+                selected: opt,
+                number: index + 1
+            };
+
+            // Contar correctas/incorrectas
+            if (opt === q.answer) {
+                correct++;
+            } else {
+                incorrect++;
+            }
+
+            // En modo estudio, mostrar inmediatamente si es correcta o incorrecta
+            if (mode === "study") {
+                document.querySelectorAll(".options label").forEach(l => {
+                    if (l.textContent === q.answer) l.classList.add("option-correct");
+                    if (l.textContent === opt && opt !== q.answer) l.classList.add("option-wrong");
+                });
+                
+                // Actualizar nota en tiempo real con penalización
+                const correctCount = answers.filter(a => a && a.selected === a.correct).length;
+                const incorrectCount = answers.filter(a => a && a.selected && a.selected !== a.correct).length;
+                const rawScore = correctCount - (incorrectCount/3);
+                const notaActual = Math.max(0, (rawScore / theme.questions.length) * 10).toFixed(1);
+                studyNoteContainer.innerHTML = `<div class="study-mode-note">📊 Nota actual: ${notaActual}/10</div>`;
+            }
+
+            saveProgress();
+        });
+
+        optionsDiv.appendChild(label);
+    });
+
+    prevBtn.style.display = index === 0 ? "none" : "inline-block";
+    nextBtn.textContent = index === theme.questions.length - 1 ? "Finalizar" : "Siguiente";
+}
+
+function saveProgress(){ 
+    localStorage.setItem(getTestStateKey(), JSON.stringify({ 
+        index, 
+        correct, 
+        incorrect, 
+        startTime, 
+        answers 
+    })); 
+}
+
+nextBtn.addEventListener("click",()=>{
+    const selectedAnswer = answers[index]?.selected || null;
+    const q = theme.questions[index];
+    
+    // Si no hay respuesta guardada, guardar una vacía
+    if (!answers[index]) {
+        answers[index] = { 
+            question: q.question, 
+            options: q.options, 
+            correct: q.answer, 
+            selected: selectedAnswer, 
+            number: index+1 
+        };
+    }
+    
+    saveProgress();
+    
+    if(index < theme.questions.length-1){ 
+        index++; 
+        loadQuestion(); 
+    } else { 
+        finishTest(); 
+    }
+});
+
+prevBtn.addEventListener("click",()=>{ 
+    if(index>0) {
+        index--; 
+        loadQuestion(); 
+    }
+});
+
+backBtn.addEventListener("click", showExitConfirmation);
+
+confirmExitBtn.addEventListener("click", () => {
+    confirmDialog.style.display = "none";
+    // Guardar el progreso antes de salir
+    saveProgress();
+    backToSelection();
+});
+
+cancelExitBtn.addEventListener("click", () => {
+    confirmDialog.style.display = "none";
+});
+
+function finishTest(){
+    clearInterval(timerInterval); 
+    localStorage.removeItem(getTestStateKey()); 
+    quizCard.style.display="none"; 
+    finalScreen.style.display="block";
+    
+    const totalSeconds=Math.floor((Date.now()-startTime)/1000); 
+    const min=String(Math.floor(totalSeconds/60)).padStart(2,"0"); 
+    const sec=String(totalSeconds%60).padStart(2,"0");
+    
+    // AMBOS MODOS USAN PENALIZACIÓN (1/3 por incorrecta)
+    const rawScore = correct - (incorrect/3);
+    const note = Math.max(0,(rawScore/theme.questions.length)*10).toFixed(2);
+    
+    summary.innerHTML=`✔️ Correctas: ${correct}<br>❌ Incorrectas: ${incorrect}<br>📝 Total preguntas: ${theme.questions.length}`;
+    finalTime.textContent=`⏱ Tiempo: ${min}:${sec}`;
+    finalNote.innerHTML=`🎯 Nota final: <strong>${note}/10</strong>`;
+    
+    saveModuleScore(theme.name,note);
+
+    failedContainer.style.display="block"; 
+    failedContainer.innerHTML="";
+    const failed=answers.filter(a=> !a.selected || (a.selected !== a.correct));
+    if(failed.length){
+        const failedDiv=document.createElement("div"); 
+        failedDiv.innerHTML="<h3>Preguntas incorrectas o sin responder</h3>";
+        failed.forEach(a=>{
+            const div=document.createElement("div"); 
+            div.className="failed-question";
+            div.innerHTML=`<div class="question-text">Pregunta ${a.number}: ${a.question}</div>`;
+            const opts=document.createElement("div"); 
+            opts.className="options";
+            a.options.forEach(opt=>{
+                const label=document.createElement("label"); 
+                label.textContent=opt;
+                if(opt===a.correct) label.classList.add("option-correct");
+                if(opt===a.selected && opt !== a.correct) label.classList.add("option-wrong");
+                opts.appendChild(label);
+            });
+            div.appendChild(opts); 
+            failedDiv.appendChild(div);
+        });
+        failedContainer.appendChild(failedDiv);
+    }
+}
+
+function saveModuleScore(moduleName,nota){
+    const numericNote=parseFloat(nota);
+    const scores=JSON.parse(localStorage.getItem("moduleScores"))||{};
+    if(!scores[moduleName]) scores[moduleName]={};
+    if(!scores[moduleName][mode]) scores[moduleName][mode]={};
+    scores[moduleName][mode].ultimaNota=numericNote;
+    scores[moduleName][mode].answers=answers;
+    if(!scores[moduleName][mode].mejorNota || numericNote>scores[moduleName][mode].mejorNota) scores[moduleName][mode].mejorNota=numericNote;
+    localStorage.setItem("moduleScores",JSON.stringify(scores));
+    buildTestButtons();
+}
+
+function updateTimer(){ 
+    const elapsed=Math.floor((Date.now()-startTime)/1000); 
+    const m=String(Math.floor(elapsed/60)).padStart(2,"0"); 
+    const s=String(elapsed%60).padStart(2,"0"); 
+    timer.textContent=`⏱ ${m}:${s}`; 
+}
+
+function restartTest(){ 
+    correct=0; 
+    incorrect=0; 
+    index=0; 
+    answers=[]; 
+    startTime=Date.now(); 
+    localStorage.removeItem(getTestStateKey()); 
+    initTest(false); 
+}
+
+continueBtn.addEventListener("click",()=>initTest(true));
+newBtn.addEventListener("click",()=>restartTest());
+
+function showLastFails(moduleName){
+    const scores=JSON.parse(localStorage.getItem("moduleScores"))||{};
+    const s = scores[moduleName]?.[mode];
+    if(!s?.answers){ alert("No hay respuestas guardadas"); return;}
+    const failed=s.answers.filter(a=>!a.selected || a.selected!==a.correct);
+    if(failed.length===0){ alert("No hay fallos o sin responder"); return;}
+    lastFailsContainer.innerHTML="";
+    failed.forEach(a=>{
+        const div=document.createElement("div"); div.className="failed-question";
+        div.innerHTML=`<div class="question-text">Pregunta ${a.number}: ${a.question}</div>`;
+        const opts=document.createElement("div"); opts.className="options";
+        a.options.forEach(opt=>{
+            const label=document.createElement("label"); label.textContent=opt;
+            if(opt===a.correct) label.classList.add("option-correct");
+            if(opt===a.selected) label.classList.add("option-wrong");
+            opts.appendChild(label);
+        });
+        div.appendChild(opts); lastFailsContainer.appendChild(div);
+    });
+    testSelection.style.display="none"; finalScreen.style.display="none"; quizCard.style.display="none"; lastFailsScreen.style.display="block";
+}
+
+// Inicializar
+loadSavedMode(); // Cargar el modo guardado en localStorage
+initDarkMode(); // Inicializar modo oscuro
+initTest();
+</script>
+</body>
+</html>
