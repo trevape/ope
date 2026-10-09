@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ADECUACIÓN</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+* { box-sizing: border-box; }
+body { font-family: Arial, sans-serif; background: #f2f4f7; margin:0; }
+.container { max-width: 900px; margin:auto; padding:15px; }
+.card { background:white; border-radius:10px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+h1,h2,h3{text-align:center;}
+.question{font-size:1.1rem;margin-bottom:15px;font-weight:bold;}
+.options label{
+    display:block;
+    padding:12px;
+    margin-bottom:12px;
+    border-radius:8px;
+    border:2px solid #ddd;
+    cursor:pointer;
+    transition: background 0.2s, border 0.2s;
+}
+.options label.selected{background:#cce5ff;border-color:#007bff;}
+.options label.option-wrong{border-color:#dc3545;background:#f8d7da;}
+.options label.option-correct{border-color:#28a745;background:#d4edda;}
+button{padding:14px;font-size:1rem;border-radius:8px;border:none;background:#007bff;color:white;width:100%;cursor:pointer;margin-top:15px;}
+button.secondary{background:#007bff;}
+button.third{background:#dc3545;}
+button.cuart{background:#fd7e14;}
+.info{display:flex;justify-content:space-between;margin-bottom:10px;font-weight:bold;}
+.final{display:none;}
+.failed-question{margin-top:30px;padding-top:20px;border-top:1px solid #ddd;}
+.failed-question .question-text{margin-bottom:15px;font-weight:bold;}
+.saved-module{
+    margin:8px 0 20px 0; 
+    font-size:0.95rem; 
+    padding:10px;
+    border-radius:10px;
+    box-shadow:0 3px 8px rgba(0,0,0,0.1);
+    transition: background 0.3s;
+}
+.saved-module p{margin:3px 0;}
+.saved-module.low{background:#f8d7da; color:#842029;}
+.saved-module.mid{background:#fff3cd; color:#664d03;}
+.saved-module.high{background:#d1e7dd; color:#0f5132;}
+#resumeDialog {
+    display: none; 
+    position: fixed; 
+    top: 0; left: 0; right: 0; bottom: 0; 
+    background: rgba(0,0,0,0.5); 
+    z-index: 9999;
+    justify-content: center; 
+    align-items: center;
+}
+#resumeDialog .card {
+    max-width: 400px; 
+    background: white;        
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: flex; 
+    flex-direction: column;
+    align-items: center;
+    gap: 12px; 
+    text-align: center;
+}
+#resumeDialog h2 { margin:0; }
+#resumeDialog p { margin:0; font-size:1rem; }
+#resumeDialog button { width: 80%; padding: 12px; font-size:1rem; border-radius:8px; border:none; cursor:pointer; transition: background 0.2s; }
+#resumeDialog button#continueBtn { background:#28a745; color:white; }
+#resumeDialog button#continueBtn:hover { background:#1e7e34; }
+#resumeDialog button#newBtn { background:#dc3545; color:white; }
+#resumeDialog button#newBtn:hover { background:#a71d2a; }
+#resumeDialog button + button { margin-top: 6px; } 
+#testSelection { display:none; }
+#testButtons button { margin-bottom: 12px; }
+
+/* Eliminamos el toggle switch original del modo estudio/examen */
+.mode-toggle-container {
+    display: none; /* Ocultamos el toggle original */
+}
+
+.mode-label {
+    display: none; /* Ocultamos las etiquetas del toggle original */
+}
+
+/* Indicador de modo actual */
+.current-mode-indicator {
+    text-align: center;
+    font-weight: bold;
+    margin: 10px 0;
+    padding: 8px;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+    font-size: 0.9rem;
+}
+
+.current-mode-indicator.exam {
+    color: #dc3545;
+    border: 2px solid #dc3545;
+}
+
+.current-mode-indicator.study {
+    color: #28a745;
+    border: 2px solid #28a745;
+}
+
+/* Estilos para mostrar nota en modo estudio */
+.study-mode-note {
+    background-color: #e7f5ff;
+    border-left: 4px solid #007bff;
+    padding: 10px;
+    margin: 15px 0;
+    border-radius: 0 8px 8px 0;
+    font-weight: bold;
+}
+
+/* Diálogo de confirmación para salir */
+#confirmDialog {
+    display: none; 
+    position: fixed; 
+    top: 0; left: 0; right: 0; bottom: 0; 
+    background: rgba(0,0,0,0.5); 
+    z-index: 9999;
+    justify-content: center; 
+    align-items: center;
+}
+
+#confirmDialog .card {
+    max-width: 400px; 
+    background: white;        
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: flex; 
+    flex-direction: column;
+    align-items: center;
+    gap: 12px; 
+    text-align: center;
+}
+
+#confirmDialog h2 { margin:0; }
+#confirmDialog p { margin:0; font-size:1rem; }
+#confirmDialog button { width: 80%; padding: 12px; font-size:1rem; border-radius:8px; border:none; cursor:pointer; transition: background 0.2s; }
+#confirmDialog button#confirmExitBtn { background:#dc3545; color:white; }
+#confirmDialog button#confirmExitBtn:hover { background:#a71d2a; }
+#confirmDialog button#cancelExitBtn { background:#6c757d; color:white; }
+#confirmDialog button#cancelExitBtn:hover { background:#545b62; }
+
+/* Estilos para los botones del test en la misma línea */
+.button-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.button-row button {
+    margin-top: 0;
+    flex: 1;
+}
+
+/* Estilos para los interruptores de modo estudio/examen y modo oscuro */
+.mode-toggle-group {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 140px;
+    margin: 20px 0;
+}
+
+.mode-toggle-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.mode-toggle-label {
+    font-size: 0.7rem;
+    color: #666;
+    text-align: center;
+    white-space: nowrap;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.mode-toggle {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    background-color: #f1f1f1;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: background-color 0.3s;
+}
+
+.mode-toggle::after {
+    content: '';
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    background-color: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+/* Interruptor de modo estudio/examen (izquierda) */
+#studyExamToggle.study-mode {
+    background-color: #28a745;
+}
+
+#studyExamToggle.study-mode::after {
+    content: '📚';
+    transform: translateX(0px);
+    background-color: white;
+    color: #333;
+}
+
+#studyExamToggle.exam-mode {
+    background-color: #dc3545;
+}
+
+#studyExamToggle.exam-mode::after {
+    content: '📝';
+    transform: translateX(30px);
+    background-color: white;
+    color: #333;
+}
+
+/* Interruptor de modo oscuro (derecha) */
+#darkModeToggle.light-mode {
+    background-color: #ffd700;
+}
+
+#darkModeToggle.light-mode::after {
+    content: '☀️';
+    transform: translateX(0px);
+    background-color: white;
+    color: #333;
+}
+
+#darkModeToggle.dark-mode {
+    background-color: #333;
+}
+
+#darkModeToggle.dark-mode::after {
+    content: '🌙';
+    transform: translateX(30px);
+    background-color: #555;
+    color: white;
+}
+
+/* Estilos para modo oscuro */
+body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+body.dark-mode .card {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+body.dark-mode .question {
+    color: #ffffff;
+}
+
+body.dark-mode .options label {
+    background-color: #2d2d2d;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+body.dark-mode .options label.selected {
+    background-color: #1a3d5c;
+    border-color: #007bff;
+}
+
+body.dark-mode .options label.option-correct {
+    background-color: #1e4620;
+    border-color: #28a745;
+    color: #ffffff;
+}
+
+body.dark-mode .options label.option-wrong {
+    background-color: #5a1a1a;
+    border-color: #dc3545;
+    color: #ffffff;
+}
+
+body.dark-mode button {
+    background-color: #0056b3;
+}
+
+body.dark-mode button.third {
+    background-color: #c82333;
+}
+
+body.dark-mode button.cuart {
+    background-color: #e06c00;
+}
+
+body.dark-mode .saved-module.low {
+    background-color: #5a1a1a;
+    color: #f8d7da;
+}
+
+body.dark-mode .saved-module.mid {
+    background-color: #5a4a00;
+    color: #fff3cd;
+}
+
+body.dark-mode .saved-module.high {
+    background-color: #1e4620;
+    color: #d1e7dd;
+}
+
+body.dark-mode .current-mode-indicator {
+    background-color: #2d2d2d;
+    border-color: #444;
+}
+
+body.dark-mode .study-mode-note {
+    background-color: #1a3d5c;
+    border-left-color: #007bff;
+    color: #e0e0e0;
+}
+
+body.dark-mode .failed-question {
+    border-top-color: #444;
+}
+
+body.dark-mode #resumeDialog .card,
+body.dark-mode #confirmDialog .card {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+}
+
+body.dark-mode .mode-toggle-label {
+    color: #aaa;
+}
+
+body.dark-mode .mode-toggle {
+    background-color: #2d2d2d;
+}
+
+/* Estilos para los botones externos del Módulo 8 */
+.btn-externo {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: none;
+    background: #17a2b8;  /* Color turquesa para distinguirlos */
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: background 0.2s;
+}
+
+.btn-externo:hover {
+    background: #138496;
+}
+
+body.dark-mode .btn-externo {
+    background: #117a8b;
+}
+
+body.dark-mode .btn-externo:hover {
+    background: #0e6675;
+}
+
+/* Separador para la sección de Módulo 8 */
+.modulo8-section {
+    margin-top: 30px;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+}
+
+body.dark-mode .modulo8-section {
+    border-top-color: #444;
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 600px) {
+    .mode-toggle-group {
+        gap: 120px;
+        flex-wrap: wrap;
+    }
+    
+    .mode-toggle {
+        width: 55px;
+        height: 28px;
+    }
+    
+    .mode-toggle::after {
+        width: 24px;
+        height: 24px;
+    }
+    
+    #studyExamToggle.exam-mode::after,
+    #darkModeToggle.dark-mode::after {
+        transform: translateX(27px);
+    }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div id="resumeDialog">
+    <div class="card">
+        <h2>💾 Intento guardado 💾</h2>
+        <p>Se detectó un intento previo guardado. ¿Deseas continuar o empezar de nuevo?</p>
+        <button id="continueBtn">Continuar</button>
+        <button id="newBtn">Empezar de nuevo</button>
+    </div>
+</div>
+
+<div id="confirmDialog">
+    <div class="card">
+        <h2>⚠️ Salir del test ⚠️</h2>
+        <p>¿Estás seguro de que quieres salir? Tu progreso se guardará automáticamente y podrás continuar más tarde.</p>
+        <button id="confirmExitBtn">Sí, salir</button>
+        <button id="cancelExitBtn">Cancelar</button>
+    </div>
+</div>
+
+<div class="card" id="testSelection">
+    <h1>📚 ADECUACIÓN 📚</h1>
+    
+    <!-- Grupo de interruptores uno al lado del otro -->
+    <div class="mode-toggle-group">
+        <!-- Interruptor de modo estudio/examen (izquierda) -->
+        <div class="mode-toggle-wrapper">
+            <div class="mode-toggle-label" id="studyExamLabel">Modo Estudio</div>
+            <div class="mode-toggle study-mode" id="studyExamToggle"></div>
+        </div>
+        
+        <!-- Interruptor de modo oscuro (derecha) -->
+        <div class="mode-toggle-wrapper">
+            <div class="mode-toggle-label" id="darkModeLabel">Modo Claro</div>
+            <div class="mode-toggle light-mode" id="darkModeToggle"></div>
+        </div>
+    </div>
+    
+    <!-- Indicador del modo actual -->
+    <div class="current-mode-indicator study" id="modeIndicator">
+        Modo: Estudio - Verás las respuestas inmediatamente
+    </div>
+    
+    <div id="testButtons"></div>
+
+   
+</div>
+
+<div class="card" id="quizCard">
+    <h1 id="themeTitle"></h1>
+    <div class="info">
+        <div id="progress"></div>
+        <div id="timer">⏱ 00:00</div>
+    </div>
+    <div class="question" id="questionText"></div>
+    
+    <!-- Contenedor para mostrar nota en modo estudio durante el test -->
+    <div id="studyNoteContainer" style="display:none;"></div>
+    
+    <div class="options" id="options"></div>
+    
+    <!-- Botones en la misma línea -->
+    <div class="button-row">
+        <button id="prevBtn">Anterior</button>
+         <button class="third" id="backBtn">Volver</button>
+        <button id="nextBtn">Siguiente</button>
+       
+    </div>
+</div>
+
+<div class="card final" id="finalScreen">
+    <h1 id="finalTheme"></h1>
+    <h2>📊 Resultado final</h2>
+    <p id="summary"></p>
+    <p id="finalTime"></p>
+    <p id="finalNote"></p>
+    <div id="failedContainer" style="display:none;"></div>
+    <button class="secondary" onclick="restartTest()">Repetir test</button>
+    <button class="third" onclick="backToSelection()">Volver</button>
+</div>
+
+<div class="card final" id="lastFailsScreen">
+    <h1 id="lastFailsTheme"></h1>
+    <h2>Preguntas incorrectas o sin responder</h2>
+    <div id="lastFailsContainer"></div>
+    <button class="third" onclick="backToSelection()">Volver</button>
+</div>
+
+</div>
+
+<script>
+// === Datos del test ===
+const themes = [
+    {
+        "name": "Examen",
+        "questions": [
+		
+    {
+        'question': 'El puesto de línea A es desempeñado por agentes de protección ciudadana, trabajando en estrecha colaboración y bajo las órdenes directas de la Jefatura de... SEÑALE LA ÚNICA OPCIÓN CORRECTA.',
+        'options': [
+            
+            'JEFATURA DE INVESTIGACIÓN',
+            
+            'JEFATURA DE SEGURIDAD CIUDADANA',
+            
+            'JEFATURA DE RECURSOS HUMANOS',
+            
+            'JEFATURA DE UNIDAD ',
+        ],
+        'answer': 'JEFATURA DE UNIDAD ',
+    },
+    {
+        'question': 'El establecimiento de patrullas a pie NO mejora los índices de incidencia delictiva, pero sí que mejoraba sustancialmente la percepción de seguridad por parte de la ciudadanía.',
+        'options': [
+            
+            'VERDADERO, PROVOCA UNA MAYOR LEGITIMIDAD DE LA POLICÍA ',
+            
+            'FALSO, LAS PATRULLAS A PIE NO MEJORAN LA PERCEPCIÓN DE SEGURIDAD',
+            
+            'VERDADERO SOLAMENTE EN ENTORNOS MARGINALES DE GRAN DELINCUENCIA',
+            
+            'VERDADERO SOLAMENTE EN POBLACIONES PEQUEÑAS CON ESCASA DELINCUENCIA',
+        ],
+        'answer': 'VERDADERO, PROVOCA UNA MAYOR LEGITIMIDAD DE LA POLICÍA ',
+    },
+    {
+        'question': '¿Cuáles NO son las funciones del HURBILTZAILE de la Oficina Local de Inteligencia?',
+        'options': [
+            
+            'IMPULSAR LA RECOGIDA DE INFORMACIÓN.',
+            
+            'TRABAJAR CON GRUPOS DE INTERÉS.',
+            
+            'MEJORAR LA CONFIANZA Y PERCEPCIÓN DE LA SOCIEDAD EN LA ERTZAINTZA.',
+            
+            'ELABORAR PRODUCTOS DE INTELIGENCIA QUE AYUDEN A LA TOMA DE DECISIONES. ',
+        ],
+        'answer': 'ELABORAR PRODUCTOS DE INTELIGENCIA QUE AYUDEN A LA TOMA DE DECISIONES. ',
+    },
+    {
+        'question': '¿Cuáles NO son las funciones del AZTERTZAILE de la Oficina Local de Inteligencia?',
+        'options': [
+            
+            'EVALUAR LA SITUACIÓN DE LA CRIMINALIDAD EN LA DEMARCACIÓN DE LA UNIDAD.',
+            
+            'REVISAR DIARIAMENTE ATESTADOS Y ACTUACIONES POLICIALES UTILIZANDO LA METODOLOGÍA BAIETZ.',
+            
+            'DINAMIZAR LA RECOGIDA DE INFORMACIÓN DESDE LAS PATRULLAS DE LA ERTZAINTZA. ',
+            
+            'PROPONER LÍNEAS DE INVESTIGACIÓN Y DE OBTENCIÓN DE INFORMACIÓN.',
+        ],
+        'answer': 'DINAMIZAR LA RECOGIDA DE INFORMACIÓN DESDE LAS PATRULLAS DE LA ERTZAINTZA. ',
+    },
+    {
+        'question': 'Teniendo en cuenta el criterio general para realizar Inspección Ocular en los delitos relacionados con VD/VG, ¿de quién será la responsabilidad de realizar la Inspección Ocular?',
+        'options': [
+            
+            'DE LA JEFATURA DE PATRULLAS PRESENTE EN EL LUGAR.',
+            
+            'DE LA JEFATURA DE OPERACIONES DE LA UNIDAD RESPONSABLE. ',
+            
+            'DE CUALQUIER AGENTE QUE LO SOLICITE DESDE EL LUGAR DE LOS HECHOS.',
+            
+            'DE LA AUTORIDAD JUDICIAL.',
+        ],
+        'answer': 'DE LA JEFATURA DE OPERACIONES DE LA UNIDAD RESPONSABLE. ',
+    },
+    {
+        'question': '¿Cuál será el tiempo máximo estimado de llegada de una patrulla a un incidente de VD/VG?',
+        'options': [
+            
+            'ES INDIFERENTE',
+            
+            '20 MINUTOS',
+            
+            '15 MINUTOS',
+            
+            '10 MINUTOS ',
+        ],
+        'answer': '10 MINUTOS ',
+    },
+    {
+        'question': '¿Señale cuál de los siguientes NO es un derecho específico de las víctimas de VD/VG?',
+        'options': [
+            
+            'PUEDE INTERPONER DENUNCIA',
+            
+            'TIENE DERECHO A SER TRASLADADA AL HOSPITAL ',
+            
+            'PUEDE SOLICITAR ORDEN DE PROTECCIÓN',
+            
+            'TIENE DERECHO A ASISTENCIA LETRADA GRATUITA',
+        ],
+        'answer': 'TIENE DERECHO A SER TRASLADADA AL HOSPITAL ',
+    },
+    {
+        'question': 'Señale la única afirmación INCORRECTA:',
+        'options': [
+            
+            'LA SENSACIÓN DE SEGURIDAD NO DEPENDE ÚNICAMENTE DE LAS TASAS DE DELINCUENCIA OBJETIVA, SINO QUE EN MUCHAS OCASIONES SON INFLUENCIADAS POR OTROS FACTORES.',
+            
+            'ENTRE LOS ELEMENTOS CLAVE QUE HAN FUNCIONADO EN LAS ESTRATEGIAS DE PREVENCIÓN ESTÁN: EL GENERAR UN VÍNCULO DE CONFIANZA ENTRE LA POLICÍA Y LA SOCIEDAD.',
+            
+            'LA CLAVE SERÍA QUE EXISTIERA NIVEL DE MIEDO ADAPTADO A LA REALIDAD CRIMINAL.',
+            
+            'NO SE DEBEN ESTABLECER PROGRAMAS DE PREVENCIÓN ESPECÍFICOS PARA ACTUAR SOBRE DETERMINADOS COLECTIVOS SENSIBLES ANTE RIESGOS PARA SU SEGURIDAD. ',
+        ],
+        'answer': 'NO SE DEBEN ESTABLECER PROGRAMAS DE PREVENCIÓN ESPECÍFICOS PARA ACTUAR SOBRE DETERMINADOS COLECTIVOS SENSIBLES ANTE RIESGOS PARA SU SEGURIDAD. ',
+    },
+    {
+        'question': 'Baietz es la herramienta informática integrada en el SIP que estudia el suceso criminal en su conjunto enlazando atestados y actuaciones policiales.',
+        'options': [
+            
+            'CORRECTO ',
+            
+            'INCORRECTO',
+            
+            'NO ESTÁ INTEGRADA EN SIP, LO DEMÁS ES CORRECTO.',
+            
+            'ESTÁ INTEGRADA EN SIP, LO DEMÁS ES INCORRECTO.',
+        ],
+        'answer': 'CORRECTO ',
+    },
+    {
+        'question': 'La patrulla de KORRIKA tiene una serie de VENTAJAS, señale cuál de las siguientes NO lo es:',
+        'options': [
+            
+            'MAYOR SENSACIÓN DE SEGURIDAD.',
+            
+            'RELACIÓN MÁS DIRECTA Y PERSONALIZADA CON EL CIUDADANO.',
+            
+            'MAYOR CAPACIDAD DE OBSERVACIÓN.',
+            
+            'MENOR MOVILIDAD RELATIVA. ',
+        ],
+        'answer': 'MENOR MOVILIDAD RELATIVA. ',
+    },
+    {
+        'question': '¿Cuál de los siguientes ES un producto de inteligencia?',
+        'options': [
+            
+            'EL EGUNERO',
+            
+            'EL TALDEKA',
+            
+            'NOTA INFORMATIVA DIARIA ',
+            
+            'EL PATRULLAJE GUIADO',
+        ],
+        'answer': 'NOTA INFORMATIVA DIARIA ',
+    },
+    {
+        'question': 'La CIFRA NEGRA cuando hablamos de delitos, se refiere a:',
+        'options': [
+            
+            'SOLAMENTE A CASOS DE AGRESIONES SEXUALES NO RESUELTOS.',
+            
+            'A TODOS LOS DELITOS NO RESUELTOS.',
+            
+            'A LOS DELITOS QUE NO HAN SIDO DENUNCIADOS POR LAS VÍCTIMAS. ',
+            
+            'A LOS DELITOS QUE HAN SIDO DENUNCIADOS POR LAS VÍCTIMAS.',
+        ],
+        'answer': 'A LOS DELITOS QUE NO HAN SIDO DENUNCIADOS POR LAS VÍCTIMAS. ',
+    },
+    {
+        'question': '¿En actuaciones de episodios relacionados con Violencia de Género o Violencia Doméstica, es obligatorio realizar una Inspección Ocular o en su defecto una Comprobación de Hechos?',
+        'options': [
+            
+            'SÍ, ES OBLIGATORIO REALIZAR UNA U OTRA DILIGENCIA. ',
+            
+            'NO, ESO ES EN DELITOS DE ODIO Y SU ÁMBITO.',
+            
+            'SOLAMENTE EN CASO DE HOMICIDIO EN VIOLENCIA DE GÉNERO.',
+            
+            'SOLAMENTE EN CASO DE USO DE ARMAS DE FUEGO.',
+        ],
+        'answer': 'SÍ, ES OBLIGATORIO REALIZAR UNA U OTRA DILIGENCIA. ',
+    },
+    {
+        'question': 'De los siguientes supuestos, ¿cuándo NO es obligatorio grabar las imágenes con la Bodycam?',
+        'options': [
+            
+            'COMISIÓN FLAGRANTE DE INFRACCIONES PENALES.',
+            
+            'AMENAZAS O POSIBILIDAD DE AGRESIÓN DURANTE LA ACTUACIÓN POLICIAL.',
+            
+            'INCIDENTES CON PRESENCIA DE ARMAS.',
+            
+            'REGISTRO EXHAUSTIVO DE UN DETENIDO EN COMISARÍA. ',
+        ],
+        'answer': 'REGISTRO EXHAUSTIVO DE UN DETENIDO EN COMISARÍA. ',
+    },
+    {
+        'question': 'En la gestión de las grabaciones realizadas por las Bodycams, en caso de NO estar relacionadas dichas imágenes con alguna investigación...',
+        'options': [
+            
+            'SE PROCEDERÁ A SU DESTRUCCIÓN EN UN PLAZO DE 1 MES.',
+            
+            'SE PROCEDERÁ A SU DESTRUCCIÓN EN UN PLAZO DE 2 MESES.',
+            
+            'SE PROCEDERÁ A SU DESTRUCCIÓN EN UN PLAZO DE 3 MESES. ',
+            
+            'SE PROCEDERÁ A SU DESTRUCCIÓN EN UN PLAZO DE 4 MESES.',
+        ],
+        'answer': 'SE PROCEDERÁ A SU DESTRUCCIÓN EN UN PLAZO DE 3 MESES. ',
+    },
+    {
+        'question': 'El sistema COMETA es un sistema que utiliza localización por GPS para conocer la distancia entre la víctima protegida y la persona agresora. ¿Qué tipo de medida de protección es?',
+        'options': [
+            
+            'UNA MEDIDA DE PROTECCIÓN POLICIAL.',
+            
+            'UNA MEDIDA DE PROTECCIÓN QUE FUERA DEL PAÍS VASCO UTILIZAN OTROS CUERPOS POLICIALES.',
+            
+            'UNA MEDIDA DE PROTECCIÓN JUDICIAL. ',
+            
+            'UNA MEDIDA DE PROTECCIÓN JUDICIAL Y POLICIAL.',
+        ],
+        'answer': 'UNA MEDIDA DE PROTECCIÓN JUDICIAL. ',
+    },
+    {
+        'question': 'La encuesta de VALORACIÓN DE RIESGO, ¿se compone de cuántas preguntas?',
+        'options': [
+            
+            '20 PREGUNTAS. ',
+            
+            '10 PREGUNTAS.',
+            
+            '25 PREGUNTAS.',
+            
+            '30 PREGUNTAS.',
+        ],
+        'answer': '20 PREGUNTAS. ',
+    },
+    {
+        'question': '¿Cuántos niveles de riesgo mide la ENCUESTA DE VALORACIÓN DE RIESGO?',
+        'options': [
+            
+            'ESPECIAL Y EXTREMO.',
+            
+            'BÁSICO, MODERADO, ALTO Y ESPECIAL. ',
+            
+            'BÁSICO, MODERADO, ALTO Y MUY ALTO.',
+            
+            'BÁSICO, MODERADO, ALTO Y EXTREMO.',
+        ],
+        'answer': 'BÁSICO, MODERADO, ALTO Y ESPECIAL. ',
+    },
+    {
+        'question': '¿Qué significa el acrónimo EBA?',
+        'options': [
+            
+            'EMAKUMEEN BABESA.',
+            
+            'ETXEKOEN BABESA.',
+            
+            'EUSKALHERRIAKO BABESA.',
+            
+            'ETXEKOEN ETA EMAKUMEEN BABESA. ',
+        ],
+        'answer': 'ETXEKOEN ETA EMAKUMEEN BABESA. ',
+    },
+    {
+        'question': 'Las herramientas SIG, GIS en inglés, ¿para qué sirven?',
+        'options': [
+            
+            'ES UN SISTEMA QUE CONECTA MAPAS CON DATOS DESCRIPTIVOS. ',
+            
+            'ES UN SISTEMA DE POSICIONAMIENTO GLOBAL DE USO POLICIAL.',
+            
+            'ES UN SISTEMA ESTADÍSTICO DE USO POLICIAL.',
+            
+            'ES UN SISTEMA DE GEOLOCALIZACIÓN DE PATRULLAS EN TIEMPO REAL.',
+        ],
+        'answer': 'ES UN SISTEMA QUE CONECTA MAPAS CON DATOS DESCRIPTIVOS. ',
+    },
+    {
+        'question': 'A nivel de comisaría, ¿cómo se denomina a la oficina de inteligencia?',
+        'options': [
+            
+            'OTI',
+            
+            'OCI',
+            
+            'SICTA',
+            
+            'OLI ',
+        ],
+        'answer': 'OLI ',
+    },
+
+
+           
+        ]
+    },
+    ]
+
+// Variables
+let theme=null,index=0,correct=0,incorrect=0,startTime=Date.now(),answers=[],timerInterval;
+let mode = "study"; // Valor por defecto
+
+// DOM
+const themeTitle=document.getElementById("themeTitle");
+const questionText=document.getElementById("questionText");
+const optionsDiv=document.getElementById("options");
+const nextBtn=document.getElementById("nextBtn");
+const prevBtn=document.getElementById("prevBtn");
+const backBtn=document.getElementById("backBtn");
+const progress=document.getElementById("progress");
+const timer=document.getElementById("timer");
+const quizCard=document.getElementById("quizCard");
+const finalScreen=document.getElementById("finalScreen");
+const lastFailsScreen=document.getElementById("lastFailsScreen");
+const summary=document.getElementById("summary");
+const finalTime=document.getElementById("finalTime");
+const finalNote=document.getElementById("finalNote");
+const finalTheme=document.getElementById("finalTheme");
+const lastFailsTheme=document.getElementById("lastFailsTheme");
+const failedContainer=document.getElementById("failedContainer");
+const lastFailsContainer=document.getElementById("lastFailsContainer");
+const resumeDialog=document.getElementById("resumeDialog");
+const continueBtn=document.getElementById("continueBtn");
+const newBtn=document.getElementById("newBtn");
+const testSelection=document.getElementById("testSelection");
+const testButtonsDiv=document.getElementById("testButtons");
+const modeIndicator=document.getElementById("modeIndicator");
+const studyNoteContainer=document.getElementById("studyNoteContainer");
+const confirmDialog=document.getElementById("confirmDialog");
+const confirmExitBtn=document.getElementById("confirmExitBtn");
+const cancelExitBtn=document.getElementById("cancelExitBtn");
+
+// Nuevos elementos para los interruptores
+const studyExamToggle = document.getElementById("studyExamToggle");
+const studyExamLabel = document.getElementById("studyExamLabel");
+const darkModeToggle = document.getElementById("darkModeToggle");
+const darkModeLabel = document.getElementById("darkModeLabel");
+
+// Funciones para el toggle de modo estudio/examen
+function toggleStudyExamMode() {
+    if (mode === "study") {
+        setMode("exam");
+    } else {
+        setMode("study");
+    }
+}
+
+function setMode(newMode) {
+    mode = newMode;
+    
+    // Guardar el modo seleccionado en localStorage
+    localStorage.setItem("testMode", mode);
+    
+    // Actualizar interruptor estudio/examen visualmente
+    if (mode === "exam") {
+        studyExamToggle.className = "mode-toggle exam-mode";
+        studyExamLabel.textContent = "Modo Examen";
+        modeIndicator.textContent = "Modo: Examen - Solo verás las respuestas al final";
+        modeIndicator.className = "current-mode-indicator exam";
+    } else {
+        studyExamToggle.className = "mode-toggle study-mode";
+        studyExamLabel.textContent = "Modo Estudio";
+        modeIndicator.textContent = "Modo: Estudio - Verás las respuestas inmediatamente";
+        modeIndicator.className = "current-mode-indicator study";
+    }
+    
+    // Reconstruir los botones de test
+    buildTestButtons();
+}
+
+// Cargar el modo guardado del localStorage al iniciar
+function loadSavedMode() {
+    const savedMode = localStorage.getItem("testMode");
+    if (savedMode === "study" || savedMode === "exam") {
+        setMode(savedMode);
+    } else {
+        setMode("study"); // Valor por defecto si no hay nada guardado
+    }
+}
+
+// Funciones para el modo oscuro
+function initDarkMode() {
+    // Cargar preferencia de modo oscuro
+    const darkMode = localStorage.getItem("darkMode") === "true";
+    
+    if (darkMode) {
+        enableDarkMode();
+    } else {
+        disableDarkMode();
+    }
+    
+    // Configurar eventos para los interruptores
+    studyExamToggle.addEventListener("click", toggleStudyExamMode);
+    darkModeToggle.addEventListener("click", toggleDarkMode);
+    
+    // También permitir arrastre como el otro toggle
+    setupToggleDrag(studyExamToggle, toggleStudyExamMode);
+    setupToggleDrag(darkModeToggle, toggleDarkMode);
+}
+
+function toggleDarkMode() {
+    if (document.body.classList.contains("dark-mode")) {
+        disableDarkMode();
+    } else {
+        enableDarkMode();
+    }
+}
+
+function enableDarkMode() {
+    document.body.classList.add("dark-mode");
+    darkModeToggle.className = "mode-toggle dark-mode";
+    darkModeLabel.textContent = "Modo Oscuro";
+    localStorage.setItem("darkMode", "true");
+}
+
+function disableDarkMode() {
+    document.body.classList.remove("dark-mode");
+    darkModeToggle.className = "mode-toggle light-mode";
+    darkModeLabel.textContent = "Modo Claro";
+    localStorage.setItem("darkMode", "false");
+}
+
+// Función genérica para arrastre en toggles
+function setupToggleDrag(toggleElement, toggleFunction) {
+    let dragStart = 0;
+    let isDragging = false;
+    
+    toggleElement.addEventListener('touchstart', (e) => {
+        dragStart = e.touches[0].clientX;
+        isDragging = true;
+        e.preventDefault();
+    }, {passive: false});
+    
+    toggleElement.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+    }, {passive: false});
+    
+    toggleElement.addEventListener('touchend', (e) => {
+        if (!isDragging) return;
+        
+        const dragEnd = e.changedTouches[0].clientX;
+        const deltaX = dragEnd - dragStart;
+        
+        // Si se arrastra horizontalmente más de 20px, cambiar modo
+        if (Math.abs(deltaX) > 20) {
+            toggleFunction();
+        }
+        
+        isDragging = false;
+        e.preventDefault();
+    }, {passive: false});
+    
+    // Para mouse
+    toggleElement.addEventListener('mousedown', (e) => {
+        dragStart = e.clientX;
+        isDragging = true;
+        e.preventDefault();
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+    });
+    
+    document.addEventListener('mouseup', (e) => {
+        if (!isDragging) return;
+        
+        const dragEnd = e.clientX;
+        const deltaX = dragEnd - dragStart;
+        
+        // Si se arrastra horizontalmente más de 20px, cambiar modo
+        if (Math.abs(deltaX) > 20) {
+            toggleFunction();
+        }
+        
+        isDragging = false;
+        e.preventDefault();
+    });
+}
+
+// Funciones
+function getTestStateKey(){ return "testState_" + theme.name + "_" + mode; }
+
+function buildTestButtons(){
+    testButtonsDiv.innerHTML="";
+    const scores=JSON.parse(localStorage.getItem("moduleScores"))||{};
+    themes.forEach((t,i)=>{
+        const btn=document.createElement("button"); 
+        btn.textContent=t.name;
+
+        const saved = localStorage.getItem("testState_" + t.name + "_" + mode);
+        if(saved){ btn.textContent += " 💾"; }
+
+        btn.onclick=()=>startSelectedTest(i); 
+        testButtonsDiv.appendChild(btn);
+
+        const s=scores[t.name]?.[mode];
+        if(s?.ultimaNota!==undefined && s?.mejorNota!==undefined){
+            const scoreDiv=document.createElement("div");
+            const clase=s.ultimaNota<5?"low":s.ultimaNota<8?"mid":"high";
+            scoreDiv.className=`saved-module ${clase}`; 
+            scoreDiv.id=`score-${i}`;
+            scoreDiv.innerHTML=`<p>Última nota: ${s.ultimaNota}/10</p>
+                                  <p>Mejor nota: ${s.mejorNota}/10</p>`;
+            const answersList=s.answers||[];
+            const failed=answersList.filter(a=>!a.selected || a.selected!==a.correct);
+            if(failed.length>0){
+                const failBtn=document.createElement("button"); 
+                failBtn.textContent="Últimos fallos";
+                failBtn.style.marginTop="6px"; 
+                failBtn.className = "cuart";
+                failBtn.onclick=()=>showLastFails(t.name);
+                scoreDiv.appendChild(failBtn);
+            }
+            testButtonsDiv.appendChild(scoreDiv);
+        }
+    });
+}
+
+function startSelectedTest(i){ 
+    theme=themes[i]; 
+    testSelection.style.display="none"; 
+    initTest(false);
+}
+
+function goToIndex(){ 
+    window.location.href="../index.html";
+}
+
+function backToSelection(){ 
+    clearInterval(timerInterval); 
+    quizCard.style.display="none"; 
+    finalScreen.style.display="none"; 
+    lastFailsScreen.style.display="none"; 
+    buildTestButtons(); 
+    testSelection.style.display="block";
+}
+
+function showExitConfirmation() {
+    confirmDialog.style.display = "flex";
+}
+
+function initTest(loadSaved=false){
+    if(!theme){ 
+        buildTestButtons(); 
+        testSelection.style.display="block"; 
+        quizCard.style.display="none"; 
+        finalScreen.style.display="none"; 
+        return;
+    }
+    
+    const saved = localStorage.getItem(getTestStateKey());
+    if(!loadSaved && saved){ 
+        resumeDialog.style.display="flex"; 
+        quizCard.style.display="none"; 
+        finalScreen.style.display="none"; 
+        return;
+    }
+    
+    resumeDialog.style.display="none"; 
+    quizCard.style.display="block"; 
+    finalScreen.style.display="none"; 
+    lastFailsScreen.style.display="none";
+    
+    if(loadSaved && saved){ 
+        const state=JSON.parse(saved); 
+        index=state.index; 
+        correct=state.correct; 
+        incorrect=state.incorrect; 
+        startTime=state.startTime; 
+        answers=state.answers; 
+        // Recalcular correct e incorrect basado en las respuestas guardadas
+        recalculateCounts();
+    } else{ 
+        index=0; 
+        correct=0; 
+        incorrect=0; 
+        startTime=Date.now(); 
+        answers=[]; 
+        localStorage.removeItem(getTestStateKey()); 
+    }
+    
+    themeTitle.textContent=theme.name; 
+    clearInterval(timerInterval); 
+    timerInterval=setInterval(updateTimer,1000); 
+    loadQuestion();
+}
+
+function recalculateCounts() {
+    correct = 0;
+    incorrect = 0;
+    answers.forEach((answer, idx) => {
+        if (answer && answer.selected) {
+            if (answer.selected === answer.correct) {
+                correct++;
+            } else {
+                incorrect++;
+            }
+        }
+    });
+}
+
+function loadQuestion() {
+    const q = theme.questions[index];
+    questionText.textContent = q.question;
+    optionsDiv.innerHTML = "";
+    progress.textContent = `Pregunta ${index+1}/${theme.questions.length}`;
+
+    q.options.forEach(opt => {
+        const label = document.createElement("label");
+        label.textContent = opt;
+
+        // Si ya habías respondido
+        if (answers[index] && answers[index].selected === opt) {
+            label.classList.add("selected");
+            
+            // En modo estudio, mostrar si la respuesta seleccionada es correcta o incorrecta
+            if (mode === "study") {
+                if (opt === q.answer) {
+                    label.classList.add("option-correct");
+                } else {
+                    label.classList.add("option-wrong");
+                    // Mostrar también la respuesta correcta
+                    document.querySelectorAll(".options label").forEach(l => {
+                        if (l.textContent === q.answer) l.classList.add("option-correct");
+                    });
+                }
+            }
+        }
+
+        label.addEventListener("click", () => {
+            // Quitar seleccionadas
+            document.querySelectorAll(".options label").forEach(l => {
+                l.classList.remove("selected", "option-correct", "option-wrong");
+            });
+            label.classList.add("selected");
+
+            // Guardar respuesta
+            const previousAnswer = answers[index];
+            const wasCorrect = previousAnswer && previousAnswer.selected === previousAnswer?.correct;
+            
+            // Si ya había una respuesta anterior, quitar su conteo
+            if (previousAnswer && previousAnswer.selected) {
+                if (wasCorrect) {
+                    correct--;
+                } else if (previousAnswer.selected) {
+                    incorrect--;
+                }
+            }
+
+            answers[index] = {
+                question: q.question,
+                options: q.options,
+                correct: q.answer,
+                selected: opt,
+                number: index + 1
+            };
+
+            // Contar correctas/incorrectas
+            if (opt === q.answer) {
+                correct++;
+            } else {
+                incorrect++;
+            }
+
+            // En modo estudio, mostrar inmediatamente si es correcta o incorrecta
+            if (mode === "study") {
+                document.querySelectorAll(".options label").forEach(l => {
+                    if (l.textContent === q.answer) l.classList.add("option-correct");
+                    if (l.textContent === opt && opt !== q.answer) l.classList.add("option-wrong");
+                });
+                
+                // Actualizar nota en tiempo real con penalización
+                const correctCount = answers.filter(a => a && a.selected === a.correct).length;
+                const incorrectCount = answers.filter(a => a && a.selected && a.selected !== a.correct).length;
+                const rawScore = correctCount - (incorrectCount/3);
+                const notaActual = Math.max(0, (rawScore / theme.questions.length) * 10).toFixed(1);
+            }
+
+            saveProgress();
+        });
+
+        optionsDiv.appendChild(label);
+    });
+
+    prevBtn.style.display = index === 0 ? "none" : "inline-block";
+    nextBtn.textContent = index === theme.questions.length - 1 ? "Finalizar" : "Siguiente";
+}
+
+function saveProgress(){ 
+    localStorage.setItem(getTestStateKey(), JSON.stringify({ 
+        index, 
+        correct, 
+        incorrect, 
+        startTime, 
+        answers 
+    })); 
+}
+
+nextBtn.addEventListener("click",()=>{
+    const selectedAnswer = answers[index]?.selected || null;
+    const q = theme.questions[index];
+    
+    // Si no hay respuesta guardada, guardar una vacía
+    if (!answers[index]) {
+        answers[index] = { 
+            question: q.question, 
+            options: q.options, 
+            correct: q.answer, 
+            selected: selectedAnswer, 
+            number: index+1 
+        };
+    }
+    
+    saveProgress();
+    
+    if(index < theme.questions.length-1){ 
+        index++; 
+        loadQuestion(); 
+    } else { 
+        finishTest(); 
+    }
+});
+
+prevBtn.addEventListener("click",()=>{ 
+    if(index>0) {
+        index--; 
+        loadQuestion(); 
+    }
+});
+
+backBtn.addEventListener("click", showExitConfirmation);
+
+confirmExitBtn.addEventListener("click", () => {
+    confirmDialog.style.display = "none";
+    // Guardar el progreso antes de salir
+    saveProgress();
+    backToSelection();
+});
+
+cancelExitBtn.addEventListener("click", () => {
+    confirmDialog.style.display = "none";
+});
+
+function finishTest(){
+    clearInterval(timerInterval); 
+    localStorage.removeItem(getTestStateKey()); 
+    quizCard.style.display="none"; 
+    finalScreen.style.display="block";
+    
+    // Mostrar el nombre del tema en los resultados
+    finalTheme.textContent = `${theme.name}`;
+    
+    const totalSeconds=Math.floor((Date.now()-startTime)/1000); 
+    const min=String(Math.floor(totalSeconds/60)).padStart(2,"0"); 
+    const sec=String(totalSeconds%60).padStart(2,"0");
+    
+    // AMBOS MODOS USAN PENALIZACIÓN (1/3 por incorrecta)
+    const rawScore = correct - (incorrect/3);
+    const note = Math.max(0,(rawScore/theme.questions.length)*10).toFixed(2);
+    
+    summary.innerHTML=`✔️ Correctas: ${correct}<br>❌ Incorrectas: ${incorrect}<br>📝 Total preguntas: ${theme.questions.length}`;
+    finalTime.textContent=`⏱ Tiempo: ${min}:${sec}`;
+    finalNote.innerHTML=`🎯 Nota final: <strong>${note}/10</strong>`;
+    
+    saveModuleScore(theme.name,note);
+
+    failedContainer.style.display="block"; 
+    failedContainer.innerHTML="";
+    const failed=answers.filter(a=> !a.selected || (a.selected !== a.correct));
+    if(failed.length){
+        const failedDiv=document.createElement("div"); 
+        failedDiv.innerHTML=`<h3>Preguntas incorrectas o sin responder.</h3>`;
+        failed.forEach(a=>{
+            const div=document.createElement("div"); 
+            div.className="failed-question";
+            div.innerHTML=`<div class="question-text">Pregunta ${a.number}: ${a.question}</div>`;
+            const opts=document.createElement("div"); 
+            opts.className="options";
+            a.options.forEach(opt=>{
+                const label=document.createElement("label"); 
+                label.textContent=opt;
+                if(opt===a.correct) label.classList.add("option-correct");
+                if(opt===a.selected && opt !== a.correct) label.classList.add("option-wrong");
+                opts.appendChild(label);
+            });
+            div.appendChild(opts); 
+            failedDiv.appendChild(div);
+        });
+        failedContainer.appendChild(failedDiv);
+    }
+}
+
+function saveModuleScore(moduleName,nota){
+    const numericNote=parseFloat(nota);
+    const scores=JSON.parse(localStorage.getItem("moduleScores"))||{};
+    if(!scores[moduleName]) scores[moduleName]={};
+    if(!scores[moduleName][mode]) scores[moduleName][mode]={};
+    scores[moduleName][mode].ultimaNota=numericNote;
+    scores[moduleName][mode].answers=answers;
+    if(!scores[moduleName][mode].mejorNota || numericNote>scores[moduleName][mode].mejorNota) scores[moduleName][mode].mejorNota=numericNote;
+    localStorage.setItem("moduleScores",JSON.stringify(scores));
+    buildTestButtons();
+}
+
+function updateTimer(){ 
+    const elapsed=Math.floor((Date.now()-startTime)/1000); 
+    const m=String(Math.floor(elapsed/60)).padStart(2,"0"); 
+    const s=String(elapsed%60).padStart(2,"0"); 
+    timer.textContent=`⏱ ${m}:${s}`; 
+}
+
+function restartTest(){ 
+    correct=0; 
+    incorrect=0; 
+    index=0; 
+    answers=[]; 
+    startTime=Date.now(); 
+    localStorage.removeItem(getTestStateKey()); 
+    initTest(false); 
+}
+
+continueBtn.addEventListener("click",()=>initTest(true));
+newBtn.addEventListener("click",()=>restartTest());
+
+function showLastFails(moduleName){
+    const scores=JSON.parse(localStorage.getItem("moduleScores"))||{};
+    const s = scores[moduleName]?.[mode];
+    if(!s?.answers){ alert("No hay respuestas guardadas"); return;}
+    const failed=s.answers.filter(a=>!a.selected || a.selected!==a.correct);
+    if(failed.length===0){ alert("No hay fallos o sin responder"); return;}
+    
+    // Mostrar el nombre del tema
+    lastFailsTheme.textContent = `${moduleName}`;
+    
+    lastFailsContainer.innerHTML="";
+    failed.forEach(a=>{
+        const div=document.createElement("div"); div.className="failed-question";
+        div.innerHTML=`<div class="question-text">Pregunta ${a.number}: ${a.question}</div>`;
+        const opts=document.createElement("div"); opts.className="options";
+        a.options.forEach(opt=>{
+            const label=document.createElement("label"); label.textContent=opt;
+            if(opt===a.correct) label.classList.add("option-correct");
+            if(opt===a.selected) label.classList.add("option-wrong");
+            opts.appendChild(label);
+        });
+        div.appendChild(opts); lastFailsContainer.appendChild(div);
+    });
+    testSelection.style.display="none"; finalScreen.style.display="none"; quizCard.style.display="none"; lastFailsScreen.style.display="block";
+}
+
+// Inicializar
+loadSavedMode(); // Cargar el modo guardado en localStorage
+initDarkMode(); // Inicializar modo oscuro
+initTest();
+</script>
+</body>
+</html>
